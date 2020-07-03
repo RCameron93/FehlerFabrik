@@ -1,0 +1,16 @@
+{
+  "slug": "FehlerFabrik",
+  "name": "Fehler Fabrik",
+  "version": "1.0.0",
+  "license": "GPL-3.0-or-later",
+  "brand": "Fehler Fabrik",
+  "author": "Ross Cameron",
+  "authorEmail": "rosscameron93@gmail.com",
+  "authorUrl": "",
+  "pluginUrl": "",
+  "manualUrl": "",
+  "sourceUrl": "https://github.com/RCameron93/FehlerFabrik",
+  "donateUrl": "",
+  "changelogUrl": "",
+  "modules": []
+}
