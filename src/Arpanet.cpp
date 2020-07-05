@@ -383,37 +383,37 @@ struct ArpanetWidget : ModuleWidget
 		}
 
 		addParam(createParamCentered<HCKSS>(mm2px(Vec(226.409, 68.243)), module, Arpanet::STARTTOGGLE_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(198.312, 72.24)), module, Arpanet::SKIP_PARAM));
+		addParam(createParamCentered<FFDPW>(mm2px(Vec(198.312, 72.24)), module, Arpanet::SKIP_PARAM));
 		addParam(createParamCentered<CKSSThree>(mm2px(Vec(185.0, 81.99)), module, Arpanet::SKIPTOGGLE_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(226.436, 81.99)), module, Arpanet::STARTSTOP_PARAM));
+		addParam(createParamCentered<FFDPW>(mm2px(Vec(226.436, 81.99)), module, Arpanet::STARTSTOP_PARAM));
 		addParam(createParamCentered<BefacoSlidePot>(mm2px(Vec(243.674, 81.99)), module, Arpanet::CLOCK_PARAM));
 		addParam(createParamCentered<BefacoSlidePot>(mm2px(Vec(256.706, 81.99)), module, Arpanet::FM_PARAM));
 		addParam(createParamCentered<BefacoSlidePot>(mm2px(Vec(269.624, 81.99)), module, Arpanet::PULSE_PARAM));
-		addParam(createParamCentered<CKD6>(mm2px(Vec(198.309, 91.74)), module, Arpanet::RESET_PARAM));
+		addParam(createParamCentered<FFDPW>(mm2px(Vec(198.309, 91.74)), module, Arpanet::RESET_PARAM));
 		addParam(createParamCentered<HCKSS>(mm2px(Vec(44.542, 118.093)), module, Arpanet::LENGTH_PARAM));
 		addParam(createParamCentered<HCKSS>(mm2px(Vec(136.158, 118.093)), module, Arpanet::RANDOM_PARAM));
 
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(310.721, 39.262)), module, Arpanet::QUANTCV_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(198.312, 52.719)), module, Arpanet::SKIP_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(226.409, 52.719)), module, Arpanet::START_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(294.668, 97.34)), module, Arpanet::QUANTA_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(326.774, 97.34)), module, Arpanet::QUANTB_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(198.312, 111.244)), module, Arpanet::RESET_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(226.409, 111.244)), module, Arpanet::STOP_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(238.409, 111.244)), module, Arpanet::STARTSTOP_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(256.705, 111.244)), module, Arpanet::FM_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(269.736, 111.244)), module, Arpanet::PULSE_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(310.721, 39.262)), module, Arpanet::QUANTCV_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(198.312, 52.719)), module, Arpanet::SKIP_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(226.409, 52.719)), module, Arpanet::START_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(294.668, 97.34)), module, Arpanet::QUANTA_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(326.774, 97.34)), module, Arpanet::QUANTB_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(198.312, 111.244)), module, Arpanet::RESET_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(226.409, 111.244)), module, Arpanet::STOP_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(238.409, 111.244)), module, Arpanet::STARTSTOP_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(256.705, 111.244)), module, Arpanet::FM_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(269.736, 111.244)), module, Arpanet::PULSE_INPUT));
 
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(198.312, 26.462)), module, Arpanet::GATEBUS1_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(212.361, 26.462)), module, Arpanet::GATEBUS2_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(226.409, 26.462)), module, Arpanet::GATEBUS3_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(243.675, 26.462)), module, Arpanet::POSITION1_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(269.736, 26.462)), module, Arpanet::CLOCKEDGATE1_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(294.668, 26.462)), module, Arpanet::QUANTA_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(326.774, 26.462)), module, Arpanet::QUANTB_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(256.705, 52.719)), module, Arpanet::CLOCK_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(294.668, 111.244)), module, Arpanet::SEQA_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(326.774, 111.244)), module, Arpanet::SEQB_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(198.312, 26.462)), module, Arpanet::GATEBUS1_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(212.361, 26.462)), module, Arpanet::GATEBUS2_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(226.409, 26.462)), module, Arpanet::GATEBUS3_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(243.675, 26.462)), module, Arpanet::POSITION1_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(269.736, 26.462)), module, Arpanet::CLOCKEDGATE1_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(294.668, 26.462)), module, Arpanet::QUANTA_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(326.774, 26.462)), module, Arpanet::QUANTB_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(256.705, 52.719)), module, Arpanet::CLOCK_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(294.668, 111.244)), module, Arpanet::SEQA_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(326.774, 111.244)), module, Arpanet::SEQB_OUTPUT));
 
 		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(243.675, 52.72)), module, Arpanet::CLOCK_LIGHT));
 	}

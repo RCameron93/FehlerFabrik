@@ -1,5 +1,6 @@
 // Probabalistic Gate Sequencer
 // Ross Cameron 2020/05/26
+
 // Title font - ITC Santa Fe
 // Main font - Jost
 // https://indestructibletype.com/Jost.html
@@ -218,38 +219,39 @@ struct MonteWidget : ModuleWidget
         addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
         addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(20.172, 49.089)), module, Monte::INTCLOCK_PARAM));
-        addParam(createParamCentered<RoundBlackSnapKnob>(mm2px(Vec(20.214, 74.758)), module, Monte::STEPS_PARAM));
-        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(48.557, 23.428)), module, Monte::PROB1_PARAM));
-        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(48.557, 36.252)), module, Monte::PROB2_PARAM));
-        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(48.557, 49.089)), module, Monte::PROB3_PARAM));
-        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(48.599, 61.923)), module, Monte::PROB4_PARAM));
-        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(48.599, 74.758)), module, Monte::PROB5_PARAM));
-        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(48.599, 87.592)), module, Monte::PROB6_PARAM));
-        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(48.599, 100.429)), module, Monte::PROB7_PARAM));
-        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(48.599, 113.263)), module, Monte::PROB8_PARAM));
+        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(20.215, 49.089)), module, Monte::INTCLOCK_PARAM));
+        addParam(createParamCentered<RoundBlackSnapKnob>(mm2px(Vec(20.215, 87.568)), module, Monte::STEPS_PARAM));
+        addParam(createParamCentered<FF08GKnob>(mm2px(Vec(46.624, 23.428)), module, Monte::PROB1_PARAM));
+        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(46.624, 36.252)), module, Monte::PROB2_PARAM));
+        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(46.624, 49.089)), module, Monte::PROB3_PARAM));
+        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(46.624, 61.923)), module, Monte::PROB4_PARAM));
+        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(46.624, 74.758)), module, Monte::PROB5_PARAM));
+        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(46.624, 87.592)), module, Monte::PROB6_PARAM));
+        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(46.624, 100.429)), module, Monte::PROB7_PARAM));
+        addParam(createParamCentered<BefacoTinyKnob>(mm2px(Vec(46.624, 113.263)), module, Monte::PROB8_PARAM));
 
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20.172, 36.252)), module, Monte::INTCLOCK_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20.172, 23.428)), module, Monte::EXTCLOCK_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20.214, 87.592)), module, Monte::STEPS_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20.214, 61.923)), module, Monte::RESET_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(38.058, 23.428)), module, Monte::PROB1_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(38.058, 36.252)), module, Monte::PROB2_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(38.058, 49.089)), module, Monte::PROB3_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(38.104, 61.923)), module, Monte::PROB4_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(38.104, 74.758)), module, Monte::PROB5_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(38.104, 87.592)), module, Monte::PROB6_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(38.104, 100.429)), module, Monte::PROB7_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(38.104, 113.263)), module, Monte::PROB8_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20.215, 61.928)), module, Monte::INTCLOCK_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20.215, 23.417)), module, Monte::EXTCLOCK_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20.215, 100.092)), module, Monte::STEPS_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20.215, 36.251)), module, Monte::RESET_INPUT));
 
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.883, 23.428)), module, Monte::GATE1_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.883, 36.252)), module, Monte::GATE2_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.883, 49.089)), module, Monte::GATE3_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.925, 61.923)), module, Monte::GATE4_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.925, 74.758)), module, Monte::GATE5_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.925, 87.592)), module, Monte::GATE6_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.925, 100.429)), module, Monte::GATE7_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.925, 113.263)), module, Monte::GATE8_OUTPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.043, 23.428)), module, Monte::PROB1_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.043, 36.252)), module, Monte::PROB2_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.043, 49.089)), module, Monte::PROB3_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.043, 61.923)), module, Monte::PROB4_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.043, 74.758)), module, Monte::PROB5_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.043, 87.592)), module, Monte::PROB6_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.043, 100.429)), module, Monte::PROB7_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(34.043, 113.263)), module, Monte::PROB8_INPUT));
+
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.924, 23.428)), module, Monte::GATE1_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.924, 36.252)), module, Monte::GATE2_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.924, 49.089)), module, Monte::GATE3_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.924, 61.923)), module, Monte::GATE4_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.924, 74.758)), module, Monte::GATE5_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.924, 87.592)), module, Monte::GATE6_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.924, 100.429)), module, Monte::GATE7_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.924, 113.263)), module, Monte::GATE8_OUTPUT));
         addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(20.214, 113.263)), module, Monte::MAIN_OUTPUT));
 
         addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.705, 23.418)), module, Monte::GATE1_LIGHT));
