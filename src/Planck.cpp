@@ -1,3 +1,8 @@
+// Title font - Fruktur Reqular
+// https://fonts.google.com/specimen/Fruktur
+// Main font - Jost
+// https://indestructibletype.com/Jost.html
+
 #include "plugin.hpp"
 #include "common.hpp"
 

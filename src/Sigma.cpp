@@ -1,5 +1,9 @@
 // Basic preset adder/subtractor
 // Ross Cameron 2020/06/05
+// Title font - AppleMyunjo
+// Main font - Jost
+// https://indestructibletype.com/Jost.html
+
 #include "plugin.hpp"
 
 struct Sigma : Module

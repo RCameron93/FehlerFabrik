@@ -1,5 +1,8 @@
 // Probabalistic Gate Sequencer
 // Ross Cameron 2020/05/26
+// Title font - ITC Santa Fe
+// Main font - Jost
+// https://indestructibletype.com/Jost.html
 
 #include "plugin.hpp"
 

@@ -1,6 +1,11 @@
+// Title font - Resistance Regular
+// https://velvetyne.fr/fonts/resistance/
+// Main font - Jost
+// https://indestructibletype.com/Jost.html
+
 #include "plugin.hpp"
 
-struct Clocks : Module
+struct Aspect : Module
 {
     enum ParamIds
     {
@@ -56,7 +61,7 @@ struct Clocks : Module
     int divisors[6] = {2, 4, 8, 16, 32, 64};
     int index = 0;
 
-    Clocks()
+    Aspect()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     }
@@ -104,51 +109,51 @@ struct Clocks : Module
     }
 };
 
-struct ClocksWidget : ModuleWidget
+struct AspectWidget : ModuleWidget
 {
-    ClocksWidget(Clocks *module)
+    AspectWidget(Aspect *module)
     {
         setModule(module);
-        setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/clocks.svg")));
+        setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Aspect.svg")));
 
         addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
         addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
         addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
         addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11.324, 9.143)), module, Clocks::TRIG_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11.324, 25.165)), module, Clocks::RESET_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11.324, 9.143)), module, Aspect::TRIG_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(11.324, 25.165)), module, Aspect::RESET_INPUT));
 
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(11.324, 41.188)), module, Clocks::D2_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(11.324, 57.21)), module, Clocks::D4_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(11.324, 73.232)), module, Clocks::D8_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(11.324, 89.255)), module, Clocks::D16_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(11.324, 105.277)), module, Clocks::D32_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(11.324, 121.299)), module, Clocks::D64_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 9.753)), module, Clocks::S1_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 25.775)), module, Clocks::S2_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 41.797)), module, Clocks::S3_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 57.82)), module, Clocks::S4_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 73.842)), module, Clocks::S5_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 89.864)), module, Clocks::S6_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 105.886)), module, Clocks::S7_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 121.909)), module, Clocks::S8_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(11.324, 41.188)), module, Aspect::D2_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(11.324, 57.21)), module, Aspect::D4_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(11.324, 73.232)), module, Aspect::D8_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(11.324, 89.255)), module, Aspect::D16_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(11.324, 105.277)), module, Aspect::D32_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(11.324, 121.299)), module, Aspect::D64_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 9.753)), module, Aspect::S1_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 25.775)), module, Aspect::S2_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 41.797)), module, Aspect::S3_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 57.82)), module, Aspect::S4_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 73.842)), module, Aspect::S5_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 89.864)), module, Aspect::S6_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 105.886)), module, Aspect::S7_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(32.209, 121.909)), module, Aspect::S8_OUTPUT));
 
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(3.048, 41.188)), module, Clocks::D2_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(3.048, 57.21)), module, Clocks::D4_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(3.048, 73.232)), module, Clocks::D8_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(3.048, 89.255)), module, Clocks::D16_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(3.048, 105.277)), module, Clocks::D32_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(3.048, 121.299)), module, Clocks::D64_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 9.55)), module, Clocks::S1_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 25.601)), module, Clocks::S2_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 41.797)), module, Clocks::S3_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 57.82)), module, Clocks::S4_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 73.842)), module, Clocks::S5_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 89.864)), module, Clocks::S6_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 105.886)), module, Clocks::S7_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 121.909)), module, Clocks::S8_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(3.048, 41.188)), module, Aspect::D2_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(3.048, 57.21)), module, Aspect::D4_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(3.048, 73.232)), module, Aspect::D8_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(3.048, 89.255)), module, Aspect::D16_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(3.048, 105.277)), module, Aspect::D32_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(3.048, 121.299)), module, Aspect::D64_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 9.55)), module, Aspect::S1_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 25.601)), module, Aspect::S2_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 41.797)), module, Aspect::S3_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 57.82)), module, Aspect::S4_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 73.842)), module, Aspect::S5_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 89.864)), module, Aspect::S6_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 105.886)), module, Aspect::S7_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.933, 121.909)), module, Aspect::S8_LIGHT));
     }
 };
 
-Model *modelClocks = createModel<Clocks, ClocksWidget>("clocks");
+Model *modelAspect = createModel<Aspect, AspectWidget>("Aspect");

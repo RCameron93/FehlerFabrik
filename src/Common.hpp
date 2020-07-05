@@ -25,7 +25,8 @@ struct BitDepthReducer
         return out;
     }
 
-    // Special case to process between -1V/+1V at 12 bit
+    // Process between -1V/+1V at 12 bit
+    // Same idea I just wanted to have a streamlined version for a plugin that only uses 12bit reduction
     // Probably not any apreciable decrease in time but hey ho
     float process12bit(float in)
     {
@@ -37,25 +38,6 @@ struct BitDepthReducer
         return out;
     }
 };
-
-// float bitDepthReducer(float in, int depth, float range)
-// {
-// 	// Quantises a voltage signal of "range" volts peak to peak (eg 10 volts) to a given bit depth
-// 	float maxVolts = range / 2.f;
-// 	// Clamp incoming signal
-// 	in = clamp(in, -(maxVolts), (maxVolts));
-// 	// Offset input by eg 5v so we're dealing with a number between 0v and 10v
-// 	in += maxVolts;
-// 	// How many possible values we have
-// 	float steps = pow(2.f, depth);
-// 	// The step size of each of those values
-// 	float stepSize = range / (steps - 1);
-// 	// Quantise
-// 	float out = round(in / stepSize) * stepSize;
-// 	// Remove offset
-// 	out -= maxVolts;
-// 	return out;
-// };
 
 struct SampleRateCrusher
 {
@@ -126,8 +108,5 @@ struct Operator
         bufferSample1 = wave;
         bufferSample2 = bufferSample1;
         feedbackSample = (bufferSample1 + bufferSample2) / 2.f;
-
-        // sine = sin(2.f * M_PI * phase + (fmMod * 20) + (feedback * 5 * sine));
-        // wave = sine * amplitude;
     }
 };

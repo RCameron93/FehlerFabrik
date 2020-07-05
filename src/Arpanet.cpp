@@ -1,9 +1,11 @@
 // 1601 Style Step Sequencer
 // Ross Cameron 2020/06/04
 
-// Fonts used
+// Title Font - ZXX Camo
 // https://www.librarystack.org/zxx/
-// https://github.com/jckfa/tinyfonts
+// Main font - Jost
+// https://indestructibletype.com/Jost.html
+
 #include "plugin.hpp"
 
 struct Arpanet : Module

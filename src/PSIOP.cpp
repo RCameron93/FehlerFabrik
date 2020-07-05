@@ -1,3 +1,8 @@
+// Title Font - Jaapokki
+// https://mikkonuuttila.com/jaapokki/
+// Main font - Jost
+// https://indestructibletype.com/Jost.html
+
 #include "plugin.hpp"
 #include "PSIOP.hpp"
 #include "common.hpp"

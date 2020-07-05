@@ -1,3 +1,8 @@
+// Title font - GlpyhWorld Meadow
+// www.glyphworld.online
+// Main font - Jost
+// https://indestructibletype.com/Jost.html
+
 #include "plugin.hpp"
 
 struct Luigi : Module
