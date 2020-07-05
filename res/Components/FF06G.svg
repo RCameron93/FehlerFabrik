@@ -1,15 +1,63 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 22.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [
-	<!ENTITY st0 "fill:#666666;">
-	<!ENTITY st1 "fill:#CACACA;">
-	<!ENTITY st2 "fill:#333333;">
-]>
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 17.008 17.008" style="enable-background:new 0 0 17.008 17.008;" xml:space="preserve">
-<g>
-	<circle style="&st0;" cx="8.504" cy="8.504" r="8.504"/>
-	<circle style="&st1;" cx="8.504" cy="8.482" r="7.443"/>
-	<circle style="&st2;" cx="8.504" cy="3.684" r="1.063"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4f, 2020-05-01)"
+   sodipodi:docname="FF06G.svg"
+   xml:space="preserve"
+   style="enable-background:new 0 0 17.008 17.008;"
+   viewBox="0 0 17.008 17.008"
+   y="0px"
+   x="0px"
+   id="Layer_1"
+   version="1.1"><metadata
+   id="metadata846"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+   id="defs844" /><sodipodi:namedview
+   inkscape:current-layer="Layer_1"
+   inkscape:window-maximized="0"
+   inkscape:window-y="22"
+   inkscape:window-x="0"
+   inkscape:cy="8.504"
+   inkscape:cx="8.504"
+   inkscape:zoom="33.748824"
+   showgrid="false"
+   id="namedview842"
+   inkscape:window-height="480"
+   inkscape:window-width="914"
+   inkscape:pageshadow="2"
+   inkscape:pageopacity="0"
+   guidetolerance="10"
+   gridtolerance="10"
+   objecttolerance="10"
+   borderopacity="1"
+   bordercolor="#666666"
+   pagecolor="#ffffff" />
+<g
+   id="g839">
+	<circle
+   id="circle833"
+   r="8.504"
+   cy="8.504"
+   cx="8.504"
+   style="fill:#666666;" />
+	<circle
+   id="circle835"
+   r="7.443"
+   cy="8.482"
+   cx="8.504"
+   style="fill:#CACACA;" />
+	<circle
+   id="circle837"
+   r="1.063"
+   cy="3.684"
+   cx="8.504"
+   style="fill:#333333;" />
 </g>
 </svg>

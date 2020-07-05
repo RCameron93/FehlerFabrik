@@ -3,6 +3,8 @@
 
 using namespace rack;
 
+#include "ffComponents.hpp"
+
 // Declare the Plugin, defined in plugin.cpp
 extern Plugin *pluginInstance;
 
@@ -17,11 +19,13 @@ extern Model *modelMonte;
 extern Model *modelArpanet;
 extern Model *modelSigma;
 
-struct HCKSS : app::SvgSwitch
-{
-    HCKSS()
-    {
-        addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/ComponentLibrary/HCKSS_0.svg")));
-        addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/ComponentLibrary/HCKSS_1.svg")));
-    }
-};
+// Components
+// SHOULD BE UPDATED TO OWN AT SOME POINT
+// struct HCKSS : app::SvgSwitch
+// {
+//     HCKSS()
+//     {
+//         addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Components/HCKSS_0.svg")));
+//         addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Components/HCKSS_1.svg")));
+//     }
+// };
