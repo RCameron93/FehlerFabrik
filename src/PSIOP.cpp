@@ -240,43 +240,44 @@ struct PSIOPWidget : ModuleWidget
         addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
         addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-        addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(22.906, 22.493)), module, PSIOP::START_PARAM));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(34.099, 35.906)), module, PSIOP::FINE_PARAM));
-        addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(52.155, 35.906)), module, PSIOP::END_PARAM));
-        addParam(createParamCentered<RoundBlackSnapKnob>(mm2px(Vec(72.824, 35.906)), module, PSIOP::RATIO_PARAM));
-        addParam(createParamCentered<RoundBlackSnapKnob>(mm2px(Vec(60.124, 55.132)), module, PSIOP::WAVE_PARAM));
-        addParam(createParamCentered<RoundBlackSnapKnob>(mm2px(Vec(20.493, 74.418)), module, PSIOP::ALGO_PARAM));
-        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(81.273, 65.867)), module, PSIOP::FB_PARAM));
+        addParam(createParamCentered<RoundHugeBlackKnob>(mm2px(Vec(12.098, 38.016)), module, PSIOP::START_PARAM));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(18.829, 47.995)), module, PSIOP::FINE_PARAM));
+        addParam(createParamCentered<RoundLargeBlackKnob>(mm2px(Vec(79.414, 38.016)), module, PSIOP::END_PARAM));
+        addParam(createParamCentered<RoundBlackSnapKnob>(mm2px(Vec(45.756, 72.726)), module, PSIOP::RATIO_PARAM));
+        addParam(createParamCentered<RoundBlackSnapKnob>(mm2px(Vec(76.049, 72.762)), module, PSIOP::WAVE_PARAM));
+        addParam(createParamCentered<RoundBlackSnapKnob>(mm2px(Vec(55.854, 40.581)), module, PSIOP::ALGO_PARAM));
+        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(62.585, 55.501)), module, PSIOP::FB_PARAM));
 
-        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(33.457, 55.132)), module, PSIOP::RATE1_PARAM));
-        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(47.646, 74.418)), module, PSIOP::RATE2_PARAM));
-        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(7.528, 55.132)), module, PSIOP::SPEED_PARAM));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(47.646, 90.854)), module, PSIOP::RATE2ATTEN_PARAM));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(60.124, 90.854)), module, PSIOP::WAVEATTEN_PARAM));
-        addParam(createParamCentered<Trimpot>(mm2px(Vec(72.824, 90.854)), module, PSIOP::RATIOATTEN_PARAM));
+        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(28.927, 55.505)), module, PSIOP::RATE1_PARAM)); // Release B
+        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(15.463, 72.762)), module, PSIOP::RATE2_PARAM)); // Release A
+        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(35.636, 40.581)), module, PSIOP::SPEED_PARAM));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(18.829, 89.907)), module, PSIOP::RATE2ATTEN_PARAM));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(72.683, 89.907)), module, PSIOP::WAVEATTEN_PARAM));
+        addParam(createParamCentered<Trimpot>(mm2px(Vec(45.756, 89.907)), module, PSIOP::RATIOATTEN_PARAM));
 
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(6.011, 20.994)), module, PSIOP::START_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(46.08, 21.213)), module, PSIOP::END_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(72.824, 108.2)), module, PSIOP::RATIO_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(60.124, 108.2)), module, PSIOP::WAVE_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20.493, 90.854)), module, PSIOP::ALGO_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(85.997, 90.854)), module, PSIOP::FB_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(12.098, 23.418)), module, PSIOP::START_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(79.414, 23.418)), module, PSIOP::END_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(45.756, 100.427)), module, PSIOP::RATIO_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(72.683, 100.427)), module, PSIOP::WAVE_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(55.854, 27.393)), module, PSIOP::ALGO_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(59.219, 100.427)), module, PSIOP::FB_INPUT));
 
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(33.457, 90.854)), module, PSIOP::RATE1_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(47.646, 108.2)), module, PSIOP::RATE2_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(7.528, 90.854)), module, PSIOP::SPEED_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(7.528, 108.2)), module, PSIOP::TRIGGER_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(20.493, 108.2)), module, PSIOP::ACCENT_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(33.457, 108.2)), module, PSIOP::CHOKE_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(32.031, 100.427)), module, PSIOP::RATE1_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(18.829, 100.427)), module, PSIOP::RATE2_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(35.658, 27.393)), module, PSIOP::SPEED_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(25.527, 113.264)), module, PSIOP::TRIGGER_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(38.99, 113.264)), module, PSIOP::ACCENT_INPUT));
+        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(52.454, 113.264)), module, PSIOP::CHOKE_INPUT));
 
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(83.818, 108.2)), module, PSIOP::OUT_OUTPUT));
+        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(65.951, 113.264)), module, PSIOP::OUT_OUTPUT));
 
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(30.818, 118.2)), module, PSIOP::DEBUG1_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(40.818, 118.2)), module, PSIOP::DEBUG2_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(50.818, 118.2)), module, PSIOP::DEBUG3_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.818, 118.2)), module, PSIOP::DEBUG4_OUTPUT));
+        // TO REMOVE
+        // addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(30.818, 118.2)), module, PSIOP::DEBUG1_OUTPUT));
+        // addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(40.818, 118.2)), module, PSIOP::DEBUG2_OUTPUT));
+        // addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(50.818, 118.2)), module, PSIOP::DEBUG3_OUTPUT));
+        // addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(60.818, 118.2)), module, PSIOP::DEBUG4_OUTPUT));
 
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(80.744, 101.484)), module, PSIOP::OUT_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(69, 113.264)), module, PSIOP::OUT_LIGHT));
     }
 };
 
