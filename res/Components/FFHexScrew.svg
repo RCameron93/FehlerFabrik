@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4f, 2020-05-01)"
+   sodipodi:docname="FFHexScrew.svg"
+   version="1.1"
+   viewBox="0 0 14.995 14.995"
+   height="5.29mm"
+   width="5.29mm"
+   data-name="Layer 1"
+   id="2a50d056-169a-4a2a-b430-fc364881f5d9">
+  <metadata
+     id="metadata846">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>FFHexScrew</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs844" />
+  <sodipodi:namedview
+     inkscape:current-layer="2a50d056-169a-4a2a-b430-fc364881f5d9"
+     inkscape:window-maximized="0"
+     inkscape:window-y="22"
+     inkscape:window-x="0"
+     inkscape:cy="9.9968503"
+     inkscape:cx="9.9968503"
+     inkscape:zoom="28.709042"
+     showgrid="false"
+     id="namedview842"
+     inkscape:window-height="480"
+     inkscape:window-width="914"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <title
+     id="title833">FFHexScrew</title>
+  <circle
+     id="circle835"
+     fill="#333"
+     r="6.52"
+     cy="7.498"
+     cx="7.498" />
+  <circle
+     id="circle837"
+     fill="gray"
+     r="5.386"
+     cy="7.498"
+     cx="7.498" />
+  <polygon
+     id="polygon839"
+     fill="#1a1a1a"
+     points="10.547 5.429 7.231 3.822 4.181 5.891 4.448 9.566 7.764 11.173 10.814 9.104 10.547 5.429" />
+</svg>

@@ -45,6 +45,13 @@ struct FF08GKnob : RoundKnob
         setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Components/FF08G.svg")));
     }
 };
+struct FF08GSnapKnob : FF08GKnob
+{
+    FF08GSnapKnob()
+    {
+        snap = true;
+    }
+};
 struct FF10BKnob : RoundKnob
 {
     FF10BKnob()
@@ -73,5 +80,14 @@ struct FF01JKPort : app::SvgPort
     FF01JKPort()
     {
         setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Components/FF01JK.svg")));
+    }
+};
+
+// Misc
+struct FFHexScrew : app::SvgScrew
+{
+    FFHexScrew()
+    {
+        setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Components/FFHexScrew.svg")));
     }
 };
