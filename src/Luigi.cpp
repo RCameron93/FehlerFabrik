@@ -1,3 +1,5 @@
+// Digital clock and noise generator
+// Ross Cameron
 // Title font - GlpyhWorld Meadow
 // www.glyphworld.online
 // Main font - Jost
@@ -50,7 +52,7 @@ struct Luigi : Module
     Luigi()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-        configParam(RATE_PARAM, 0.f, 12.f, 12.f, "");
+        configParam(RATE_PARAM, 0.f, 12.f, 7.f, "");
         configParam(AMP_PARAM, 0.f, 1.f, 1.f, "");
     }
 
@@ -102,21 +104,21 @@ struct LuigiWidget : ModuleWidget
         setModule(module);
         setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Luigi.svg")));
 
-        addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-        addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-        addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-        addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(29.095, 17.137)), module, Luigi::RATE_PARAM));
-        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(29.095, 27.137)), module, Luigi::AMP_PARAM));
+        addParam(createParamCentered<FF10GKnob>(mm2px(Vec(30.789, 54.414)), module, Luigi::RATE_PARAM));
+        addParam(createParamCentered<FF10GKnob>(mm2px(Vec(9.851, 54.414)), module, Luigi::AMP_PARAM));
 
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(9.346, 14.846)), module, Luigi::RATE_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(9.346, 34.846)), module, Luigi::CLOCK_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(9.346, 44.846)), module, Luigi::AMP_INPUT));
+        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(30.789, 74.757)), module, Luigi::RATE_INPUT));
+        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(20.32, 31.441)), module, Luigi::CLOCK_INPUT));
+        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(9.851, 74.757)), module, Luigi::AMP_INPUT));
 
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(8.791, 55.59)), module, Luigi::RANDOM_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(8.479, 77.188)), module, Luigi::DUST_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(8.479, 87.188)), module, Luigi::NOISE_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(20.32, 100.386)), module, Luigi::RANDOM_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(30.789, 113.225)), module, Luigi::DUST_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(9.851, 113.225)), module, Luigi::NOISE_OUTPUT));
     }
 };
 

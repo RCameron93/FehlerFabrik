@@ -73,6 +73,13 @@ struct FF15GKnob : RoundKnob
         setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Components/FF15G.svg")));
     }
 };
+struct FF15GSnapKnob : FF15GKnob
+{
+    FF15GSnapKnob()
+    {
+        snap = true;
+    }
+};
 
 // Port
 struct FF01JKPort : app::SvgPort

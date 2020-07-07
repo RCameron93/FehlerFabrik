@@ -1,3 +1,5 @@
+// Clock Divider and sequential sequencer
+// Ross Cameron
 // Title font - Resistance Regular
 // https://velvetyne.fr/fonts/resistance/
 // Main font - Jost

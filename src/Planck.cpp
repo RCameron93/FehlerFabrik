@@ -82,21 +82,21 @@ struct PlanckWidget : ModuleWidget
         setModule(module);
         setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Planck.svg")));
 
-        addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-        addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-        addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-        addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+        addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+        addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-        addParam(createParamCentered<RoundBlackSnapKnob>(mm2px(Vec(24.524, 22.756)), module, Planck::DEPTH_PARAM));
-        addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(24.322, 76.816)), module, Planck::RATE_PARAM));
+        addParam(createParamCentered<FF15GSnapKnob>(mm2px(Vec(10.971, 58.109)), module, Planck::DEPTH_PARAM));
+        addParam(createParamCentered<FF15GKnob>(mm2px(Vec(29.737, 36.251)), module, Planck::RATE_PARAM));
 
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(15.24, 10.362)), module, Planck::QUANT_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(6.4, 22.756)), module, Planck::DEPTH_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(15.24, 64.25)), module, Planck::CRUSH_INPUT));
-        addInput(createInputCentered<PJ301MPort>(mm2px(Vec(6.706, 76.644)), module, Planck::RATE_INPUT));
+        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(30.757, 100.434)), module, Planck::CRUSH_INPUT));
+        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(30.757, 87.594)), module, Planck::RATE_INPUT));
+        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(9.843, 100.434)), module, Planck::QUANT_INPUT));
+        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(9.843, 87.594)), module, Planck::DEPTH_INPUT));
 
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(15.24, 36.898)), module, Planck::QUANT_OUTPUT));
-        addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(14.881, 90.785)), module, Planck::CRUSH_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(30.757, 113.225)), module, Planck::CRUSH_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(9.843, 113.225)), module, Planck::QUANT_OUTPUT));
     }
 };
 
