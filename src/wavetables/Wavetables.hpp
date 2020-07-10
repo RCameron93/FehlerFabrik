@@ -1,3 +1,5 @@
+// Wavetables from Valley Rack
+// https://github.com/ValleyAudio/ValleyRackFree/tree/v1.0/src/Common/Wavetables
 // #pragma once
 
 #include "opal_wavetable/opal_wavetable.h"

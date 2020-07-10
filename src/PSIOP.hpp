@@ -1,4 +1,5 @@
-#include "plugin.hpp"
+// #include "plugin.hpp"
+#include "wavetables/Wavetables.hpp"
 
 // Ramp generator based on Befaco Rampage
 // https://github.com/VCVRack/Befaco/blob/v1/src/Rampage.cpp
@@ -80,6 +81,58 @@ struct Ramp
         {
             out = in;
         }
+    }
+};
+
+// Wavetable operator for FM synthesis
+struct Operator
+{
+    float phase = 0.f;
+    float freq = 0.f;
+    float wave = 0.f;
+    float out = 0.f;
+    float bufferSample1 = 0.f;
+    float bufferSample2 = 0.f;
+    float feedbackSample = 0.f;
+
+    void setPitch(float pitch)
+    {
+        // The default pitch is C4 = 256.6256f
+        freq = dsp::FREQ_C4 * pow(2.f, pitch);
+    }
+
+    void applyRatio(float ratio)
+    {
+        freq *= ratio;
+    }
+
+    void process(float time, float amplitude, float fmMod, float feedback, int table)
+    {
+        phase += freq * time + fmMod * 0.5f;
+        if (phase >= 0.5f)
+        {
+            phase -= 1.f;
+        }
+        else if (phase <= -0.5f)
+        {
+            phase += 1.f;
+        }
+
+        float wtPOS = (phase + feedback * feedbackSample);
+        // Wrap wavetable position between 0.f and 1.f
+        wtPOS = eucMod(wtPOS, 1.f);
+
+        float *waveTable = wavetable_opal[table];
+        float tableLength = wavetable_opal_lengths[table];
+
+        wtPOS *= (tableLength);
+        wave = interpolateLinear(waveTable, wtPOS);
+
+        out = wave * amplitude;
+
+        bufferSample1 = wave;
+        bufferSample2 = bufferSample1;
+        feedbackSample = (bufferSample1 + bufferSample2) / 2.f;
     }
 };
 
