@@ -28,6 +28,8 @@ struct Fax : Module
 		REC_PARAM,
 		STARTTOGGLE_PARAM,
 		RECTOGGLE_PARAM,
+		PRE_PARAM,
+		AUTO_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds
@@ -66,6 +68,8 @@ struct Fax : Module
 		configParam(REC_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(STARTTOGGLE_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(RECTOGGLE_PARAM, 0.f, 1.f, 0.f, "");
+		configParam(PRE_PARAM, 0.f, 1.f, 1.f, "");
+		configParam(AUTO_PARAM, 0.f, 1.f, 1.f, "");
 	}
 
 	dsp::SchmittTrigger stepTrigger;
@@ -151,9 +155,6 @@ struct Fax : Module
 			advanceIndex();
 			phase = 0.f;
 		}
-
-		// // Outputs a squarewave with duty cycle determined by width input
-		// bool lfo = phase < width;
 	}
 
 	void reset()
@@ -217,6 +218,24 @@ struct Fax : Module
 
 	void recordControls()
 	{
+		if (params[AUTO_PARAM].getValue())
+		{
+			autoStop = true;
+		}
+		else
+		{
+			autoStop = false;
+		}
+
+		if (params[PRE_PARAM].getValue())
+		{
+			pre = true;
+		}
+		else
+		{
+			pre = false;
+		}
+
 		// Get the record mode
 		// false = trig, true = gate,
 		recordMode = (bool)params[RECTOGGLE_PARAM].getValue();
@@ -291,8 +310,8 @@ struct FaxWidget : ModuleWidget
 		addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		addParam(createParamCentered<FF15GSnapKnob>(mm2px(Vec(21.0, 37.562)), module, Fax::NSTEPS_PARAM));
-		addParam(createParamCentered<FF15GKnob>(mm2px(Vec(60.28, 37.562)), module, Fax::CLOCK_PARAM));
+		addParam(createParamCentered<FF15GSnapKnob>(mm2px(Vec(24.0, 37.562)), module, Fax::NSTEPS_PARAM));
+		addParam(createParamCentered<FF15GKnob>(mm2px(Vec(57.28, 37.562)), module, Fax::CLOCK_PARAM));
 		addParam(createParamCentered<FFDPW>(mm2px(Vec(12.0, 62.056)), module, Fax::STEPADV_PARAM));
 		addParam(createParamCentered<FFDPW>(mm2px(Vec(69.28, 62.056)), module, Fax::RESET_PARAM));
 		addParam(createParamCentered<FF20GKnob>(mm2px(Vec(40.724, 68.343)), module, Fax::CV_PARAM));
@@ -300,9 +319,11 @@ struct FaxWidget : ModuleWidget
 		addParam(createParamCentered<FFDPW>(mm2px(Vec(65.28, 90.009)), module, Fax::REC_PARAM));
 		addParam(createParamCentered<HCKSS>(mm2px(Vec(16.0, 99.716)), module, Fax::STARTTOGGLE_PARAM));
 		addParam(createParamCentered<HCKSS>(mm2px(Vec(65.28, 99.716)), module, Fax::RECTOGGLE_PARAM));
+		addParam(createParamCentered<CKSS>(mm2px(Vec(9.0, 29.647)), module, Fax::PRE_PARAM));
+		addParam(createParamCentered<CKSS>(mm2px(Vec(72.28, 29.647)), module, Fax::AUTO_PARAM));
 
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(21.0, 23.417)), module, Fax::NSTEPS_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(60.28, 23.417)), module, Fax::CLOCK_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(24.0, 23.417)), module, Fax::NSTEPS_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(57.28, 23.417)), module, Fax::CLOCK_INPUT));
 		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(40.64, 36.251)), module, Fax::IN_INPUT));
 		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(11.905, 74.976)), module, Fax::STEPADV_INPUT));
 		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(69.28, 74.976)), module, Fax::RESET_INPUT));
