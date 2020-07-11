@@ -50,7 +50,6 @@ struct Fax : Module
 	};
 	enum LightIds
 	{
-		// ENUMS(LED1_LIGHT, 32),
 		ENUMS(LED1_LIGHT, 96),
 		REC_LIGHT,
 		NUM_LIGHTS
@@ -112,7 +111,6 @@ struct Fax : Module
 
 	void record(float newVolt)
 	{
-		// float newVolt = inputs[IN_INPUT].getNormalVoltage(params[CV_PARAM].getValue());
 		voltages[index] = newVolt;
 	}
 
