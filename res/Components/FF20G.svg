@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4f, 2020-05-01)"
+   sodipodi:docname="FF20G.svg"
+   version="1.1"
+   viewBox="0 0 56.693 56.693"
+   height="20mm"
+   width="20mm"
+   data-name="Layer 1"
+   id="a2cd235a-6804-4182-8de0-8b9308de809e">
+  <metadata
+     id="metadata844">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>FF20G</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs842" />
+  <sodipodi:namedview
+     inkscape:current-layer="a2cd235a-6804-4182-8de0-8b9308de809e"
+     inkscape:window-maximized="0"
+     inkscape:window-y="22"
+     inkscape:window-x="0"
+     inkscape:cy="37.795276"
+     inkscape:cx="37.795276"
+     inkscape:zoom="7.5935417"
+     showgrid="false"
+     id="namedview840"
+     inkscape:window-height="480"
+     inkscape:window-width="914"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <title
+     id="title833">FF20G</title>
+  <g
+     data-name="g1007"
+     id="7b7998b1-25e7-46c9-8a05-677e2fc1abb8">
+    <circle
+       fill="#666"
+       r="28.346"
+       cy="28.346"
+       cx="28.346"
+       data-name="circle1001"
+       id="548a881c-de40-4c37-9fe1-7135d253a396" />
+    <circle
+       fill="#cacaca"
+       r="24.809"
+       cy="28.273"
+       cx="28.346"
+       data-name="circle1003"
+       id="b635be34-7f41-442b-841e-6da9fe4914d5" />
+    <circle
+       fill="#333"
+       r="3.543"
+       cy="12.281"
+       cx="28.346"
+       data-name="circle1005"
+       id="988acfb7-96b4-4d2b-ab9e-7180d7ccf9d8" />
+  </g>
+</svg>

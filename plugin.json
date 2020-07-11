@@ -74,6 +74,15 @@
       "tags": [
         "Utility"
       ]
+    },
+    {
+      "slug": "Fax",
+      "name": "Fax",
+      "description": "CV recording sequencer",
+      "tags": [
+        "Sequencer",
+        "Recording"
+      ]
     }
   ]
 }
