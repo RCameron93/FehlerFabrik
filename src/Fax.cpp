@@ -1,4 +1,18 @@
+// CV Recorder/Sequencer
+// Ross Cameron 2020/07/11
+
+// Title font - ARK-ES Dense Regular
+// https://stued.io/projects/ark-typeface
+// Main font - Jost
+// https://indestructibletype.com/Jost.html
+
 #include "plugin.hpp"
+
+// Magic numbers for the led positions
+// These came from using tranform tools in illustrator, but I should write a function to generate them within the widget struct
+
+float ledPos[32][2] = {
+	{40.724, 55.342}, {45.699, 56.332}, {49.917, 59.150}, {52.735, 63.367}, {53.725, 68.343}, {52.735, 73.317}, {49.917, 77.535}, {45.699, 80.353}, {40.724, 81.343}, {35.749, 80.353}, {31.531, 77.535}, {28.713, 73.317}, {27.723, 68.343}, {28.713, 63.367}, {31.531, 59.150}, {35.749, 56.332}, {40.724, 51.342}, {47.230, 52.636}, {52.745, 56.321}, {56.430, 61.837}, {57.724, 68.343}, {56.430, 74.848}, {52.745, 80.363}, {47.230, 84.049}, {40.724, 85.343}, {34.218, 84.049}, {28.703, 80.363}, {25.018, 74.848}, {23.724, 68.343}, {25.018, 61.837}, {28.703, 56.321}, {34.218, 52.636}};
 
 struct Fax : Module
 {
@@ -33,45 +47,14 @@ struct Fax : Module
 	};
 	enum LightIds
 	{
-		LED1_LIGHT,
-		LED2_LIGHT,
-		LED3_LIGHT,
-		LED4_LIGHT,
-		LED5_LIGHT,
-		LED6_LIGHT,
-		LED7_LIGHT,
-		LED8_LIGHT,
-		LED9_LIGHT,
-		LED10_LIGHT,
-		LED11_LIGHT,
-		LED12_LIGHT,
-		LED13_LIGHT,
-		LED14_LIGHT,
-		LED15_LIGHT,
-		LED16_LIGHT,
-		LED17_LIGHT,
-		LED18_LIGHT,
-		LED19_LIGHT,
-		LED20_LIGHT,
-		LED21_LIGHT,
-		LED22_LIGHT,
-		LED23_LIGHT,
-		LED24_LIGHT,
-		LED25_LIGHT,
-		LED26_LIGHT,
-		LED27_LIGHT,
-		LED28_LIGHT,
-		LED29_LIGHT,
-		LED30_LIGHT,
-		LED31_LIGHT,
-		LED32_LIGHT,
+		ENUMS(LED1_LIGHT, 32),
 		NUM_LIGHTS
 	};
 
 	Fax()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(NSTEPS_PARAM, 0.f, 1.f, 0.f, "");
+		configParam(NSTEPS_PARAM, 0.f, 32.f, 0.f, "");
 		configParam(CLOCK_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(STEPADV_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(RESET_PARAM, 0.f, 1.f, 0.f, "");
@@ -119,38 +102,10 @@ struct FaxWidget : ModuleWidget
 
 		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(40.64, 100.386)), module, Fax::OUT_OUTPUT));
 
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(40.724, 55.342)), module, Fax::LED1_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(45.699, 56.332)), module, Fax::LED2_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(49.917, 59.150)), module, Fax::LED3_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(52.735, 63.367)), module, Fax::LED4_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(53.725, 68.343)), module, Fax::LED5_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(52.735, 73.317)), module, Fax::LED6_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(49.917, 77.535)), module, Fax::LED7_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(45.699, 80.353)), module, Fax::LED8_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(40.724, 81.343)), module, Fax::LED9_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(35.749, 80.353)), module, Fax::LED10_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(31.531, 77.535)), module, Fax::LED11_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(28.713, 73.317)), module, Fax::LED12_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(27.723, 68.343)), module, Fax::LED13_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(28.713, 63.367)), module, Fax::LED14_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(31.531, 59.150)), module, Fax::LED15_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(35.749, 56.332)), module, Fax::LED16_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(40.724, 51.342)), module, Fax::LED17_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(47.230, 52.636)), module, Fax::LED18_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(52.745, 56.321)), module, Fax::LED19_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(56.430, 61.837)), module, Fax::LED20_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(57.724, 68.343)), module, Fax::LED21_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(56.430, 74.848)), module, Fax::LED22_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(52.745, 80.363)), module, Fax::LED23_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(47.230, 84.049)), module, Fax::LED24_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(40.724, 85.343)), module, Fax::LED25_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(34.218, 84.049)), module, Fax::LED26_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(28.703, 80.363)), module, Fax::LED27_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(25.018, 74.848)), module, Fax::LED28_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(23.724, 68.343)), module, Fax::LED29_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(25.018, 61.837)), module, Fax::LED30_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(28.703, 56.321)), module, Fax::LED31_LIGHT));
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(34.218, 52.636)), module, Fax::LED32_LIGHT));
+		for (int i = 0; i < 32; i++)
+		{
+			addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(ledPos[i][0], ledPos[i][1])), module, Fax::LED1_LIGHT + i));
+		}
 	}
 };
 
