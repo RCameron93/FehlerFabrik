@@ -9,7 +9,8 @@
 #include "plugin.hpp"
 
 // Magic numbers for the led positions
-// These came from using tranform tools in illustrator, but I should write a function to generate them within the widget struct
+// These came from using tranform tools in illustrator
+// I should write a function to generate them within the widget struct, it's simple trig
 
 float ledPos[32][2] = {
 	{40.724, 55.342}, {45.699, 56.332}, {49.917, 59.150}, {52.735, 63.367}, {53.725, 68.343}, {52.735, 73.317}, {49.917, 77.535}, {45.699, 80.353}, {40.724, 81.343}, {35.749, 80.353}, {31.531, 77.535}, {28.713, 73.317}, {27.723, 68.343}, {28.713, 63.367}, {31.531, 59.150}, {35.749, 56.332}, {40.724, 51.342}, {47.230, 52.636}, {52.745, 56.321}, {56.430, 61.837}, {57.724, 68.343}, {56.430, 74.848}, {52.745, 80.363}, {47.230, 84.049}, {40.724, 85.343}, {34.218, 84.049}, {28.703, 80.363}, {25.018, 74.848}, {23.724, 68.343}, {25.018, 61.837}, {28.703, 56.321}, {34.218, 52.636}};
@@ -47,7 +48,8 @@ struct Fax : Module
 	};
 	enum LightIds
 	{
-		ENUMS(LED1_LIGHT, 32),
+		// ENUMS(LED1_LIGHT, 32),
+		ENUMS(LED1_LIGHT, 96),
 		REC_LIGHT,
 		NUM_LIGHTS
 	};
@@ -75,10 +77,15 @@ struct Fax : Module
 	bool running = false;
 
 	bool recording = false;
+	bool recordMode = false;
+
+	bool autoStop = false;
+	bool pre = true;
 
 	float phase = 0.f;
 	int index = 0;
 
+	float newVolt = 0.f;
 	float out = 0.f;
 
 	float voltages[32] = {0.f};
@@ -99,14 +106,37 @@ struct Fax : Module
 		return steps;
 	}
 
+	void record(float newVolt)
+	{
+		// float newVolt = inputs[IN_INPUT].getNormalVoltage(params[CV_PARAM].getValue());
+		voltages[index] = newVolt;
+	}
+
 	void advanceIndex()
 	{
 		int max = getSteps() - 1;
 
+		if (pre && recording)
+		{
+			record(newVolt);
+		}
+
 		++index;
+
+		if (!pre && recording)
+		{
+			record(newVolt);
+		}
+
 		if (index > max)
 		{
 			index = 0;
+
+			if (autoStop)
+			{
+				// Stops recording when the index rolls over
+				recording = false;
+			}
 		}
 	}
 
@@ -145,12 +175,16 @@ struct Fax : Module
 	{
 		out = voltages[index];
 
+		float ledValue = out / 10.0;
+
 		// Set position lights
 		for (int i = 0; i < 32; ++i)
 		{
-			lights[LED1_LIGHT + i].setBrightness(0);
+			lights[LED1_LIGHT + i * 3].setBrightness(0);
+			lights[LED1_LIGHT + i * 3 + 1].setBrightness(0);
 		}
-		lights[LED1_LIGHT + index].setBrightness(1);
+		lights[LED1_LIGHT + index * 3].setBrightness(0.5 + 0.5 * -1 * ledValue);
+		lights[LED1_LIGHT + index * 3 + 1].setBrightness(0.5 + 0.5 * ledValue);
 	}
 
 	void startControls()
@@ -185,7 +219,7 @@ struct Fax : Module
 	{
 		// Get the record mode
 		// false = trig, true = gate,
-		bool recordMode = (bool)params[RECTOGGLE_PARAM].getValue();
+		recordMode = (bool)params[RECTOGGLE_PARAM].getValue();
 
 		if (recordMode)
 		{
@@ -209,12 +243,6 @@ struct Fax : Module
 		}
 	}
 
-	void record()
-	{
-		float newVolt = inputs[IN_INPUT].getNormalVoltage(params[CV_PARAM].getValue());
-		voltages[index] = newVolt;
-	}
-
 	void process(const ProcessArgs &args) override
 	{
 		startControls();
@@ -228,22 +256,24 @@ struct Fax : Module
 			lfoPhase(clockRate, args.sampleTime);
 		}
 
+		recordControls();
+
+		newVolt = inputs[IN_INPUT].getNormalVoltage(params[CV_PARAM].getValue());
+
 		skip();
 		reset();
 
-		recordControls();
+		sequencerstep();
 
 		if (recording)
 		{
 			lights[REC_LIGHT].setBrightness(1);
-			record();
+			out = newVolt;
 		}
 		else
 		{
 			lights[REC_LIGHT].setBrightness(0);
 		}
-
-		sequencerstep();
 
 		outputs[OUT_OUTPUT].setVoltage(out);
 	}
@@ -283,7 +313,7 @@ struct FaxWidget : ModuleWidget
 
 		for (int i = 0; i < 32; i++)
 		{
-			addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(ledPos[i][0], ledPos[i][1])), module, Fax::LED1_LIGHT + i));
+			addChild(createLightCentered<MediumLight<RedGreenBlueLight>>(mm2px(Vec(ledPos[i][0], ledPos[i][1])), module, Fax::LED1_LIGHT + (i * 3)));
 		}
 		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(56.28, 113.225)), module, Fax::REC_LIGHT));
 	}
