@@ -48,6 +48,7 @@ struct Fax : Module
 	enum LightIds
 	{
 		ENUMS(LED1_LIGHT, 32),
+		REC_LIGHT,
 		NUM_LIGHTS
 	};
 
@@ -72,6 +73,8 @@ struct Fax : Module
 
 	// Initialise stopped
 	bool running = false;
+
+	bool recording = false;
 
 	float phase = 0.f;
 	int index = 0;
@@ -130,9 +133,18 @@ struct Fax : Module
 			index = 0;
 		}
 	}
+	void skip()
+	{
+		if (stepTrigger.process(params[STEPADV_PARAM].getValue() + inputs[STEPADV_INPUT].getVoltage()))
+		{
+			advanceIndex();
+		}
+	}
 
 	void sequencerstep()
 	{
+		out = voltages[index];
+
 		// Set position lights
 		for (int i = 0; i < 32; ++i)
 		{
@@ -169,6 +181,40 @@ struct Fax : Module
 		}
 	}
 
+	void recordControls()
+	{
+		// Get the record mode
+		// false = trig, true = gate,
+		bool recordMode = (bool)params[RECTOGGLE_PARAM].getValue();
+
+		if (recordMode)
+		{
+			// Gate (momentary) record
+			if (params[REC_PARAM].getValue() || inputs[REC_INPUT].getVoltage())
+			{
+				recording = true;
+			}
+			else
+			{
+				recording = false;
+			}
+		}
+		else
+		{
+			// Trig (toggle) recording
+			if (recordTrigger.process(params[REC_PARAM].getValue() + inputs[REC_INPUT].getVoltage()))
+			{
+				recording = !recording;
+			}
+		}
+	}
+
+	void record()
+	{
+		float newVolt = inputs[IN_INPUT].getNormalVoltage(params[CV_PARAM].getValue());
+		voltages[index] = newVolt;
+	}
+
 	void process(const ProcessArgs &args) override
 	{
 		startControls();
@@ -182,8 +228,24 @@ struct Fax : Module
 			lfoPhase(clockRate, args.sampleTime);
 		}
 
+		skip();
 		reset();
+
+		recordControls();
+
+		if (recording)
+		{
+			lights[REC_LIGHT].setBrightness(1);
+			record();
+		}
+		else
+		{
+			lights[REC_LIGHT].setBrightness(0);
+		}
+
 		sequencerstep();
+
+		outputs[OUT_OUTPUT].setVoltage(out);
 	}
 };
 
@@ -223,6 +285,7 @@ struct FaxWidget : ModuleWidget
 		{
 			addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(ledPos[i][0], ledPos[i][1])), module, Fax::LED1_LIGHT + i));
 		}
+		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(56.28, 113.225)), module, Fax::REC_LIGHT));
 	}
 };
 
