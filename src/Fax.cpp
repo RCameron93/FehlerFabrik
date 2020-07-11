@@ -54,19 +54,136 @@ struct Fax : Module
 	Fax()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(NSTEPS_PARAM, 0.f, 32.f, 0.f, "");
-		configParam(CLOCK_PARAM, 0.f, 1.f, 0.f, "");
+		configParam(NSTEPS_PARAM, 1.f, 32.f, 16.f, "");
+		configParam(CLOCK_PARAM, -2.f, 6.f, 2.f, "Clock Rate", "BPM", 2.f, 60.f);
 		configParam(STEPADV_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(RESET_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(CV_PARAM, 0.f, 1.f, 0.f, "");
+		configParam(CV_PARAM, -5.f, 5.f, 0.f, "");
 		configParam(START_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(REC_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(STARTTOGGLE_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(RECTOGGLE_PARAM, 0.f, 1.f, 0.f, "");
 	}
 
+	dsp::SchmittTrigger stepTrigger;
+	dsp::SchmittTrigger resetTrigger;
+	dsp::SchmittTrigger startTrigger;
+	dsp::SchmittTrigger recordTrigger;
+
+	// Initialise stopped
+	bool running = false;
+
+	float phase = 0.f;
+	int index = 0;
+
+	float out = 0.f;
+
+	float voltages[32] = {0.f};
+
+	float getRate()
+	{
+		float rate = params[CLOCK_PARAM].getValue();
+		rate += inputs[CLOCK_INPUT].getVoltage();
+		rate = std::pow(2.f, rate);
+		return rate;
+	}
+
+	int getSteps()
+	{
+		int steps = (int)params[NSTEPS_PARAM].getValue();
+		steps += (int)inputs[NSTEPS_INPUT].getVoltage();
+		steps = clamp(steps, 1, 32);
+		return steps;
+	}
+
+	void advanceIndex()
+	{
+		int max = getSteps() - 1;
+
+		++index;
+		if (index > max)
+		{
+			index = 0;
+		}
+	}
+
+	void lfoPhase(float rate, float delta)
+	{
+		// Accumulate phase
+		phase += rate * delta;
+
+		// After one cycle advance the sequencer index
+		if (phase >= 1.f)
+		{
+			advanceIndex();
+			phase = 0.f;
+		}
+
+		// // Outputs a squarewave with duty cycle determined by width input
+		// bool lfo = phase < width;
+	}
+
+	void reset()
+	{
+		if (resetTrigger.process(params[RESET_PARAM].getValue() + inputs[RESET_INPUT].getVoltage()))
+		{
+			index = 0;
+		}
+	}
+
+	void sequencerstep()
+	{
+		// Set position lights
+		for (int i = 0; i < 32; ++i)
+		{
+			lights[LED1_LIGHT + i].setBrightness(0);
+		}
+		lights[LED1_LIGHT + index].setBrightness(1);
+	}
+
+	void startControls()
+	{
+		// Get the start/stop mode
+		// false = trig, true = gate,
+		bool startMode = (bool)params[STARTTOGGLE_PARAM].getValue();
+
+		if (startMode)
+		{
+			// Gate (momentary) start
+			if (params[START_PARAM].getValue() || inputs[START_INPUT].getVoltage())
+			{
+				running = true;
+			}
+			else
+			{
+				running = false;
+			}
+		}
+		else
+		{
+			// Trig (toggle) start
+			if (startTrigger.process(params[START_PARAM].getValue() + inputs[START_INPUT].getVoltage()))
+			{
+				running = !running;
+			}
+		}
+	}
+
 	void process(const ProcessArgs &args) override
 	{
+		startControls();
+
+		if (running)
+		{
+			// Get clock rate
+			float clockRate = getRate();
+
+			// Accumulate LFO
+			lfoPhase(clockRate, args.sampleTime);
+		}
+
+		reset();
+		sequencerstep();
 	}
 };
 
