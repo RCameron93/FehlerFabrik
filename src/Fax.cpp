@@ -67,7 +67,7 @@ struct Fax : Module
 		configParam(REC_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(STARTTOGGLE_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(RECTOGGLE_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(PRE_PARAM, 0.f, 1.f, 1.f, "");
+		configParam(PRE_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(AUTO_PARAM, 0.f, 1.f, 1.f, "");
 	}
 
@@ -83,7 +83,7 @@ struct Fax : Module
 	bool recordMode = false;
 
 	bool autoStop = false;
-	bool pre = true;
+	bool pre = false;
 
 	float phase = 0.f;
 	int index = 0;
