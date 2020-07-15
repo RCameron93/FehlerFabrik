@@ -1,5 +1,7 @@
 # Fehler Fabrik
 
+![Image of Fehler Fabrik Modules](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FehlerFabrikModules.png)
+
 Plugin modules for [VCV Rack](http://vcvrack.com)
 
 These are all still a work in progress!
