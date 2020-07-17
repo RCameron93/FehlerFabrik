@@ -240,6 +240,20 @@ struct PSIOP : Module
         // Send output signal to output jack
         outputs[OUT_OUTPUT].setVoltage(output * 3.5 * level);
     }
+
+    json_t *dataToJson() override
+    {
+        json_t *rootJ = json_object();
+        json_object_set_new(rootJ, "DC Blocking", json_integer(blocking));
+        return rootJ;
+    }
+
+    void dataFromJson(json_t *rootJ) override
+    {
+        json_t *modeJ = json_object_get(rootJ, "DC Blocking");
+        if (modeJ)
+            blocking = json_integer_value(modeJ);
+    }
 };
 
 struct PSIOPBlockDCItem : MenuItem
