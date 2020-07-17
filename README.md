@@ -54,7 +54,7 @@ Planck is a decimator and bit depth reducer. The output of the depth reducer is 
 
 PSI OP is a 4 operator FM percussion voice. It's *heavily* based on a popular Eurorack hardware drum module, so if you can find a manual for such a module, that'll explain the functionality until I can write some proper documentation!
 
-By default, PSI OP has a DC offset filter on it's output. This can be toggled via the context menu.
+By default, PSI OP has a DC offset filter on it's output. This can be toggled via the context menu. The looping behaviour of the Speed envelope can also be toggled in the menu.
 
 The opal wavetable used in PSI OP is taken from [ValleyRack](https://github.com/ValleyAudio/ValleyRackFree/tree/v1.0/src/Common/Wavetables)
 
