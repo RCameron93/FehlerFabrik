@@ -58,6 +58,7 @@ struct PSIOP : Module
 
     DCBlock dcBlock;
     bool blocking = true;
+    bool looping = true;
 
     dsp::SchmittTrigger trigger;
     dsp::SchmittTrigger choke;
@@ -178,8 +179,7 @@ struct PSIOP : Module
         float pitch = startPitch;
         if (rates[2] > 0.2)
         {
-            // looping set to true
-            ramps[2].process(0.3, 0, 1 - rates[2], args.sampleTime, true);
+            ramps[2].process(0.3, 0, 1 - rates[2], args.sampleTime, looping);
 
             // Crossfade from start pitch to end pitch
             float xf = ramps[2].out;
@@ -236,32 +236,30 @@ struct PSIOP : Module
         outputs[OUT_OUTPUT].setVoltage(output * 3.5 * level);
     }
 
+    void onReset() override
+    {
+        blocking = true;
+        looping = true;
+    }
+
     json_t *dataToJson() override
     {
         json_t *rootJ = json_object();
-        json_object_set_new(rootJ, "DC Blocking", json_integer(blocking));
+        json_object_set_new(rootJ, "DC Blocking", json_boolean(blocking));
+        json_object_set_new(rootJ, "Speed Looping", json_boolean(looping));
+
         return rootJ;
     }
 
     void dataFromJson(json_t *rootJ) override
     {
-        json_t *modeJ = json_object_get(rootJ, "DC Blocking");
-        if (modeJ)
-            blocking = json_integer_value(modeJ);
-    }
-};
+        json_t *dcJ = json_object_get(rootJ, "DC Blocking");
+        if (dcJ)
+            blocking = json_boolean_value(dcJ);
 
-struct PSIOPBlockDCItem : MenuItem
-{
-    PSIOP *psiop;
-
-    void onAction(const event::Action &e) override
-    {
-        psiop->blocking = !psiop->blocking;
-    }
-    void step() override
-    {
-        rightText = CHECKMARK(psiop->blocking);
+        json_t *loopJ = json_object_get(rootJ, "Speed Looping");
+        if (loopJ)
+            looping = json_boolean_value(loopJ);
     }
 };
 
@@ -313,17 +311,44 @@ struct PSIOPWidget : ModuleWidget
 
     void appendContextMenu(Menu *menu) override
     {
-        // MyModule* module = dynamic_cast<MyModule*>(this->module);
-
-        menu->addChild(new MenuEntry);
-        // menu->addChild(createMenuLabel("Mode"));
-
         PSIOP *psiop = dynamic_cast<PSIOP *>(module);
         assert(psiop);
 
-        PSIOPBlockDCItem *blockDC = createMenuItem<PSIOPBlockDCItem>("Add DC Filter");
+        struct PSIOPBlockDCItem : MenuItem
+        {
+            PSIOP *psiop;
+
+            void onAction(const event::Action &e) override
+            {
+                psiop->blocking = !psiop->blocking;
+            }
+            void step() override
+            {
+                rightText = CHECKMARK(psiop->blocking);
+            }
+        };
+
+        struct PSIOPSpeedLoopItem : MenuItem
+        {
+            PSIOP *psiop;
+
+            void onAction(const event::Action &e) override
+            {
+                psiop->looping = !psiop->looping;
+            }
+            void step() override
+            {
+                rightText = CHECKMARK(psiop->looping);
+            }
+        };
+
+        menu->addChild(new MenuEntry);
+        PSIOPBlockDCItem *blockDC = createMenuItem<PSIOPBlockDCItem>("DC Filter");
         blockDC->psiop = psiop;
         menu->addChild(blockDC);
+        PSIOPSpeedLoopItem *speedLoop = createMenuItem<PSIOPSpeedLoopItem>("Speed Ramp Looping");
+        speedLoop->psiop = psiop;
+        menu->addChild(speedLoop);
     }
 };
 
