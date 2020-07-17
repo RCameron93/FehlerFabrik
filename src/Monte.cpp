@@ -82,14 +82,10 @@ struct Monte : Module
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(INTCLOCK_PARAM, -2.f, 6.f, 2.f, "Clock Rate", "BPM", 2.f, 60.f);
         configParam(STEPS_PARAM, 1.f, 16.f, 8.f, "");
-        configParam(PROB1_PARAM, 0.f, 1.f, 0.f, "");
-        configParam(PROB2_PARAM, 0.f, 1.f, 0.f, "");
-        configParam(PROB3_PARAM, 0.f, 1.f, 0.f, "");
-        configParam(PROB4_PARAM, 0.f, 1.f, 0.f, "");
-        configParam(PROB5_PARAM, 0.f, 1.f, 0.f, "");
-        configParam(PROB6_PARAM, 0.f, 1.f, 0.f, "");
-        configParam(PROB7_PARAM, 0.f, 1.f, 0.f, "");
-        configParam(PROB8_PARAM, 0.f, 1.f, 0.f, "");
+        for (int i = 0; i < 8; ++i)
+        {
+            configParam(PROB1_PARAM + i, 0.f, 1.f, 0.5f, "");
+        }
     }
 
     int getSteps()
@@ -262,7 +258,7 @@ struct MonteWidget : ModuleWidget
         addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.705, 87.592)), module, Monte::GATE6_LIGHT));
         addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.705, 100.429)), module, Monte::GATE7_LIGHT));
         addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.705, 113.263)), module, Monte::GATE8_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(27.153, 113.263)), module, Monte::MAIN_LIGHT));
+        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(20.214, 120.263)), module, Monte::MAIN_LIGHT));
     }
 };
 
