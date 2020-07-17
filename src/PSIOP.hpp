@@ -1,6 +1,24 @@
 // #include "plugin.hpp"
 #include "wavetables/Wavetables.hpp"
 
+struct DCBlock
+{
+    // https://www.dsprelated.com/freebooks/filters/DC_Blocker.html
+
+    float xm1 = 0;
+    float ym1 = 0;
+
+    float r = 0.995;
+
+    float process(float x)
+    {
+        float y = x - xm1 + r * ym1;
+        xm1 = x;
+        ym1 = y;
+        return y;
+    }
+};
+
 // Ramp generator based on Befaco Rampage
 // https://github.com/VCVRack/Befaco/blob/v1/src/Rampage.cpp
 struct Ramp
@@ -141,11 +159,11 @@ struct Operator
 float modMatrix[6][4][5] =
     {
         {{0, 1, 0, 0, 0}, {0, 0, 0, 0, 1}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}},
-        {{0, 0, 0, 0, 1}, {0, 0, 0, 0, 1}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}},
+        {{0, 0, 0, 0, 0.5}, {0, 0, 0, 0, 0.5}, {0, 0, 0, 0, 0}, {0, 0, 0, 0, 0}},
         {{0, 1, 0, 0, 0}, {0, 0, 1, 0, 0}, {0, 0, 0, 1, 0}, {0, 0, 0, 0, 1}},
-        {{0, 1, 0, 0, 0}, {0, 0, 0, 0, 1}, {0, 0, 0, 1, 0}, {0, 0, 0, 0, 1}},
-        {{0, 0, 0, 0, 1}, {0, 0, 1, 0, 0}, {0, 0, 0, 1, 0}, {0, 0, 0, 0, 1}},
-        {{0, 0, 0, 0, 1}, {0, 0, 1, 0, 0}, {0, 0, 0, 0, 1}, {0, 0, 0, 0, 1}},
+        {{0, 1, 0, 0, 0}, {0, 0, 0, 0, 0.5}, {0, 0, 0, 1, 0}, {0, 0, 0, 0, 0.5}},
+        {{0, 0, 0, 0, 0.5}, {0, 0, 1, 0, 0}, {0, 0, 0, 1, 0}, {0, 0, 0, 0, 0.5}},
+        {{0, 0, 0, 0, 0.3}, {0, 0, 1, 0, 0}, {0, 0, 0, 0, 0.3}, {0, 0, 0, 0, 0.3}},
 };
 
 // 23 Frequency ratios taken from Mutable Instruments Plaits 2 OP FM mode

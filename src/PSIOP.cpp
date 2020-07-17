@@ -60,6 +60,9 @@ struct PSIOP : Module
     Operator operators[4];
     Ramp ramps[3];
 
+    DCBlock dcBlock;
+    bool blocking = true;
+
     dsp::SchmittTrigger trigger;
     dsp::SchmittTrigger choke;
     dsp::SchmittTrigger accent;
@@ -228,8 +231,28 @@ struct PSIOP : Module
             outputs[DEBUG1_OUTPUT + i].setVoltage(operators[i].out);
         }
 
+        // Filter DC content from output
+        if (blocking)
+        {
+            output = dcBlock.process(output);
+        }
+
         // Send output signal to output jack
-        outputs[OUT_OUTPUT].setVoltage(output * 4 * level);
+        outputs[OUT_OUTPUT].setVoltage(output * 3.5 * level);
+    }
+};
+
+struct PSIOPBlockDCItem : MenuItem
+{
+    PSIOP *psiop;
+
+    void onAction(const event::Action &e) override
+    {
+        psiop->blocking = !psiop->blocking;
+    }
+    void step() override
+    {
+        rightText = CHECKMARK(psiop->blocking);
     }
 };
 
@@ -277,6 +300,21 @@ struct PSIOPWidget : ModuleWidget
         addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(65.951, 113.264)), module, PSIOP::OUT_OUTPUT));
 
         addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(74, 113.264)), module, PSIOP::OUT_LIGHT));
+    }
+
+    void appendContextMenu(Menu *menu) override
+    {
+        // MyModule* module = dynamic_cast<MyModule*>(this->module);
+
+        menu->addChild(new MenuEntry);
+        // menu->addChild(createMenuLabel("Mode"));
+
+        PSIOP *psiop = dynamic_cast<PSIOP *>(module);
+        assert(psiop);
+
+        PSIOPBlockDCItem *blockDC = createMenuItem<PSIOPBlockDCItem>("Add DC Filter");
+        blockDC->psiop = psiop;
+        menu->addChild(blockDC);
     }
 };
 
