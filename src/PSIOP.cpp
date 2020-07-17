@@ -45,10 +45,6 @@ struct PSIOP : Module
     enum OutputIds
     {
         OUT_OUTPUT,
-        DEBUG1_OUTPUT,
-        DEBUG2_OUTPUT,
-        DEBUG3_OUTPUT,
-        DEBUG4_OUTPUT,
         NUM_OUTPUTS
     };
     enum LightIds
@@ -228,7 +224,6 @@ struct PSIOP : Module
 
             // Send to output as dependent on Algorithim
             output += operators[i].out * modMatrix[algo][i][4];
-            outputs[DEBUG1_OUTPUT + i].setVoltage(operators[i].out);
         }
 
         // Filter DC content from output
