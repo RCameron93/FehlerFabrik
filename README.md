@@ -59,7 +59,7 @@ The opal wavetable used in PSI OP is taken from [ValleyRack](https://github.com/
 
 ![Image of Sigma](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFSigma.png)
 
-Sigma is a basic preset voltage adder. Sometimes you just want to add 1V to something! The outputs are all capped to 10v
+Sigma is a basic preset voltage adder. Sometimes you just want to add 1V to something! The outputs are all capped to +/- 10v
 
 
 # TODO
