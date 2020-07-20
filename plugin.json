@@ -83,6 +83,17 @@
         "Sequencer",
         "Recording"
       ]
+    },
+    {
+      "slug": "Slip",
+      "name": "Slip",
+      "description": "Asymmetrical Voltage Processor",
+      "tags": [
+        "Effect",
+        "Waveshaper",
+        "Slew Limiter",
+        "Delay"
+      ]
     }
   ]
 }
