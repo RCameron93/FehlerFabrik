@@ -1,4 +1,75 @@
 #include "plugin.hpp"
+#include "../dep/lib/samplerate.h"
+
+#define HISTORY_SIZE (1 << 21)
+
+struct SimpleDelay
+{
+	// From Fundamental Delay
+	// https://github.com/VCVRack/Fundamental/blob/v1/src/Delay.cpp
+
+	dsp::DoubleRingBuffer<float, HISTORY_SIZE> historyBuffer;
+	dsp::DoubleRingBuffer<float, 16> outBuffer;
+	SRC_STATE *src = nullptr;
+
+	SimpleDelay()
+	{
+		src = src_new(SRC_SINC_FASTEST, 1, NULL);
+		assert(src);
+	}
+
+	~SimpleDelay()
+	{
+		src_delete(src);
+	}
+
+	float process(float in, float delay, float smpRate)
+	{
+		float dry = in;
+
+		delay = 1e-3 * std::pow(10.f / 1e-3, delay);
+		// Number of delay samples
+		float index = std::round(delay * smpRate);
+
+		// Push dry sample into history buffer
+		if (!historyBuffer.full())
+		{
+			historyBuffer.push(dry);
+		}
+
+		// How many samples do we need consume to catch up?
+		float consume = index - historyBuffer.size();
+
+		if (outBuffer.empty())
+		{
+			double ratio = 1.f;
+			if (std::fabs(consume) >= 16.f)
+			{
+				// Here's where the delay magic is. Smooth the ratio depending on how divergent we are from the correct delay time.
+				ratio = std::pow(10.f, clamp(consume / 10000.f, -1.f, 1.f));
+			}
+
+			SRC_DATA srcData;
+			srcData.data_in = (const float *)historyBuffer.startData();
+			srcData.data_out = (float *)outBuffer.endData();
+			srcData.input_frames = std::min((int)historyBuffer.size(), 16);
+			srcData.output_frames = outBuffer.capacity();
+			srcData.end_of_input = false;
+			srcData.src_ratio = ratio;
+			src_process(src, &srcData);
+			historyBuffer.startIncr(srcData.input_frames_used);
+			outBuffer.endIncr(srcData.output_frames_gen);
+		}
+
+		float wet = 0.f;
+		if (!outBuffer.empty())
+		{
+			wet = outBuffer.shift();
+		}
+
+		return wet;
+	}
+};
 
 struct SlewLimiter
 {
@@ -13,7 +84,7 @@ struct SlewLimiter
 
 		// minimum and maximum slopes in volts per second
 		const float slewMin = 0.1f;
-		const float slewMax = 10000.f;
+		const float slewMax = 100000.f;
 		// Amount of extra slew per voltage difference
 		const float shapeScale = 1 / 10.f;
 
@@ -91,11 +162,14 @@ struct Slip : Module
 		NUM_LIGHTS
 	};
 
+	SlewLimiter slewLims[2];
+	SimpleDelay delays[2];
+
 	Slip()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(THRESH_PARAM, -10.f, 10.f, 0.f, "");
-		configParam(WET_PARAM, 0.f, 1.f, 0.f, "");
+		configParam(WET_PARAM, 0.f, 1.f, 1.f, "");
 
 		for (int i = 0; i < 8; ++i)
 		{
@@ -111,8 +185,6 @@ struct Slip : Module
 		configParam(LOWSLEW_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(HIGHSLEW_PARAM, 0.f, 1.f, 0.f, "");
 	}
-
-	SlewLimiter slewLims[2];
 
 	float pincher(float input, float amount)
 	{
@@ -179,21 +251,26 @@ struct Slip : Module
 		slew = clamp(slew, 0.f, 1.f);
 
 		// Processing
+		float output = input;
 		// shift - taken from vcv delay
+		if (shift > 0)
+		{
+			output = delays[high].process(output, shift, args.sampleRate);
+		}
 
 		// pinch - taken from HetrickCV Waveshaper
-		input = pincher(input, pinch);
+		output = pincher(output, pinch);
 
-		// fold - taken from Autodafe wavefolder
-		input = folder(input, fold);
+		// fold - taken output Autodafe wavefolder
+		output = folder(output, fold);
 
 		// slew - taken from befaco slew limiter
-		input = slewLims[high].process(input, slew, args.sampleTime);
+		output = slewLims[high].process(output, slew, args.sampleTime);
 
 		// Output high and low components
 		if (high)
 		{
-			outputs[HIGH_OUTPUT].setVoltage(input);
+			outputs[HIGH_OUTPUT].setVoltage(output);
 			outputs[LOW_OUTPUT].setVoltage(threshold);
 			// outputs[LOW_OUTPUT].setVoltage(0);	// This gives a great weird pulsey "gapped" wave
 		}
@@ -201,11 +278,18 @@ struct Slip : Module
 		{
 			outputs[HIGH_OUTPUT].setVoltage(threshold);
 			// outputs[HIGHA_OUTPUT].setVoltage(0);	// This gives a great weird pulsey "gapped" wave
-			outputs[LOW_OUTPUT].setVoltage(input);
+			outputs[LOW_OUTPUT].setVoltage(output);
 		}
 
+		// Dry/Wet
+		float wet = params[WET_PARAM].getValue();
+		wet += inputs[WET_INPUT].getVoltage() * 0.1;
+		wet = clamp(wet, 0.f, 1.f);
+
+		output = crossfade(input, output, wet);
+
 		// Output main
-		outputs[OUT_OUTPUT].setVoltage(input);
+		outputs[OUT_OUTPUT].setVoltage(output);
 	}
 };
 
