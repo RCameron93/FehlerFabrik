@@ -3,6 +3,24 @@
 
 #define HISTORY_SIZE (1 << 21)
 
+struct DCBlock
+{
+	// https://www.dsprelated.com/freebooks/filters/DC_Blocker.html
+
+	float xm1 = 0;
+	float ym1 = 0;
+
+	float r = 0.995;
+
+	float process(float x)
+	{
+		float y = x - xm1 + r * ym1;
+		xm1 = x;
+		ym1 = y;
+		return y;
+	}
+};
+
 struct SimpleDelay
 {
 	// From Fundamental Delay
@@ -227,7 +245,6 @@ struct Slip : Module
 
 		// Is the current sample above or below the threshold?
 		bool high = input > threshold;
-		// int high = 0;
 
 		// Get parameters
 		// The sample will run through the same type of process if it's high or low
