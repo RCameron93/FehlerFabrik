@@ -129,12 +129,13 @@ struct SlewLimiter
 	}
 };
 
-struct Slip : Module
+struct Rasoir : Module
 {
 	enum ParamIds
 	{
 		THRESH_PARAM,
 		WET_PARAM,
+		THRESHTRIM_PARAM,
 		LOWSHIFTTRIM_PARAM,
 		HIGHSHIFTTRIM_PARAM,
 		LOWPINCHTRIM_PARAM,
@@ -183,12 +184,12 @@ struct Slip : Module
 	SlewLimiter slewLims[2];
 	SimpleDelay delays[2];
 
-	Slip()
+	Rasoir()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(THRESH_PARAM, -10.f, 10.f, 0.f, "");
 		configParam(WET_PARAM, 0.f, 1.f, 1.f, "");
-
+		configParam(THRESHTRIM_PARAM, -1.f, 1.f, 0.f, "");
 		for (int i = 0; i < 8; ++i)
 		{
 			configParam(LOWSHIFTTRIM_PARAM + i, -1.f, 1.f, 0.f, "");
@@ -240,7 +241,7 @@ struct Slip : Module
 		// Split Input into high and low
 		// What constitutes high and low is determined by the threshold
 		float threshold = params[THRESH_PARAM].getValue();
-		threshold += inputs[THRESH_INPUT].getVoltage();
+		threshold += inputs[THRESH_INPUT].getVoltage() * params[THRESHTRIM_PARAM].getValue();
 		threshold = clamp(threshold, -10.f, 10.f);
 
 		// Is the current sample above or below the threshold?
@@ -310,56 +311,57 @@ struct Slip : Module
 	}
 };
 
-struct SlipWidget : ModuleWidget
+struct RasoirWidget : ModuleWidget
 {
-	SlipWidget(Slip *module)
+	RasoirWidget(Rasoir *module)
 	{
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Slip.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Rasoir.svg")));
 
 		addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(23.097, 23.404)), module, Slip::THRESH_PARAM));
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(78.503, 23.404)), module, Slip::WET_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(30.084, 23.404)), module, Rasoir::THRESH_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(78.503, 23.404)), module, Rasoir::WET_PARAM));
+		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(19.14, 23.864)), module, Rasoir::THRESHTRIM_PARAM));
 
-		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(17.82, 90.023)), module, Slip::LOWSHIFTTRIM_PARAM));
-		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(17.82, 48.282)), module, Slip::HIGHSHIFTTRIM_PARAM));
-		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(38.813, 90.023)), module, Slip::LOWPINCHTRIM_PARAM));
-		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(38.813, 48.282)), module, Slip::HIGHPINCHTRIM_PARAM));
-		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(62.807, 90.023)), module, Slip::LOWFOLDTRIM_PARAM));
-		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(62.807, 48.282)), module, Slip::HIGHFOLDTRIM_PARAM));
-		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(83.8, 90.023)), module, Slip::LOWSLEWTRIM_PARAM));
-		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(83.8, 48.282)), module, Slip::HIGHSLEWTRIM_PARAM));
+		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(17.82, 90.023)), module, Rasoir::LOWSHIFTTRIM_PARAM));
+		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(17.82, 48.282)), module, Rasoir::HIGHSHIFTTRIM_PARAM));
+		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(38.813, 90.023)), module, Rasoir::LOWPINCHTRIM_PARAM));
+		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(38.813, 48.282)), module, Rasoir::HIGHPINCHTRIM_PARAM));
+		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(62.807, 90.023)), module, Rasoir::LOWFOLDTRIM_PARAM));
+		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(62.807, 48.282)), module, Rasoir::HIGHFOLDTRIM_PARAM));
+		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(83.8, 90.023)), module, Rasoir::LOWSLEWTRIM_PARAM));
+		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(83.8, 48.282)), module, Rasoir::HIGHSLEWTRIM_PARAM));
 
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(20.82, 77.584)), module, Slip::LOWSHIFT_PARAM));
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(20.82, 59.027)), module, Slip::HIGHSHIFT_PARAM));
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(40.813, 77.584)), module, Slip::LOWPINCH_PARAM));
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(40.813, 59.027)), module, Slip::HIGHPINCH_PARAM));
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(60.807, 77.584)), module, Slip::LOWFOLD_PARAM));
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(60.807, 59.027)), module, Slip::HIGHFOLD_PARAM));
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(80.8, 77.584)), module, Slip::LOWSLEW_PARAM));
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(80.8, 59.027)), module, Slip::HIGHSLEW_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(20.82, 77.584)), module, Rasoir::LOWSHIFT_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(20.82, 59.027)), module, Rasoir::HIGHSHIFT_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(40.813, 77.584)), module, Rasoir::LOWPINCH_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(40.813, 59.027)), module, Rasoir::HIGHPINCH_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(60.807, 77.584)), module, Rasoir::LOWFOLD_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(60.807, 59.027)), module, Rasoir::HIGHFOLD_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(80.8, 77.584)), module, Rasoir::LOWSLEW_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(80.8, 59.027)), module, Rasoir::HIGHSLEW_PARAM));
 
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(8.0, 23.417)), module, Slip::THRESH_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(50.758, 23.417)), module, Slip::IN_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(93.6, 23.417)), module, Slip::WET_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(8.0, 23.417)), module, Rasoir::THRESH_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(50.758, 23.417)), module, Rasoir::IN_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(93.6, 23.417)), module, Rasoir::WET_INPUT));
 
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(14.82, 100.386)), module, Slip::LOWSHIFT_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(14.82, 36.251)), module, Slip::HIGHSHIFT_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(36.813, 100.386)), module, Slip::LOWPINCH_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(36.813, 36.251)), module, Slip::HIGHPINCH_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(64.807, 100.386)), module, Slip::LOWFOLD_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(64.807, 36.251)), module, Slip::HIGHFOLD_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(86.8, 100.386)), module, Slip::LOWSLEW_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(86.8, 36.251)), module, Slip::HIGHSLEW_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(14.82, 100.386)), module, Rasoir::LOWSHIFT_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(14.82, 36.251)), module, Rasoir::HIGHSHIFT_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(36.813, 100.386)), module, Rasoir::LOWPINCH_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(36.813, 36.251)), module, Rasoir::HIGHPINCH_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(64.807, 100.386)), module, Rasoir::LOWFOLD_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(64.807, 36.251)), module, Rasoir::HIGHFOLD_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(86.8, 100.386)), module, Rasoir::LOWSLEW_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(86.8, 36.251)), module, Rasoir::HIGHSLEW_INPUT));
 
-		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(26.0, 113.225)), module, Slip::LOW_OUTPUT));
-		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(50.8, 113.225)), module, Slip::OUT_OUTPUT));
-		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(75.6, 113.225)), module, Slip::HIGH_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(26.0, 113.225)), module, Rasoir::LOW_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(50.8, 113.225)), module, Rasoir::OUT_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(75.6, 113.225)), module, Rasoir::HIGH_OUTPUT));
 	}
 };
 
-Model *modelSlip = createModel<Slip, SlipWidget>("Slip");
+Model *modelRasoir = createModel<Rasoir, RasoirWidget>("Rasoir");

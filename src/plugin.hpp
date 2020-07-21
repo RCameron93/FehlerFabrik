@@ -19,7 +19,7 @@ extern Model *modelMonte;
 extern Model *modelArpanet;
 extern Model *modelSigma;
 extern Model *modelFax;
-extern Model *modelSlip;
+extern Model *modelRasoir;
 
 // Components
 // SHOULD BE UPDATED TO OWN AT SOME POINT
