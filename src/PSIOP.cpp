@@ -58,7 +58,7 @@ struct PSIOP : Module
 
     DCBlock dcBlock;
     bool blocking = true;
-    bool looping = true;
+    bool looping = false;
 
     dsp::SchmittTrigger trigger;
     dsp::SchmittTrigger choke;
@@ -239,7 +239,7 @@ struct PSIOP : Module
     void onReset() override
     {
         blocking = true;
-        looping = true;
+        looping = false;
     }
 
     json_t *dataToJson() override
