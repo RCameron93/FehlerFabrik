@@ -310,12 +310,6 @@ struct Rasoir : Module
 			outputs[LOW_OUTPUT].setVoltage(output);
 		}
 
-		// DC Filter for main output
-		if (params[DC_PARAM].getValue())
-		{
-			output = dcFilter.process(output);
-		}
-
 		// Dry/Wet
 		float wet = params[WET_PARAM].getValue();
 		wet += inputs[WET_INPUT].getVoltage() * 0.1;
@@ -324,6 +318,10 @@ struct Rasoir : Module
 		output = crossfade(input, output, wet);
 
 		// Output main
+		if (params[DC_PARAM].getValue())
+		{
+			output = dcFilter.process(output);
+		}
 		outputs[OUT_OUTPUT].setVoltage(output);
 	}
 };
