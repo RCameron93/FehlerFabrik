@@ -1,3 +1,10 @@
+// Asymmetrical Voltage Processor
+// Ross Cameron 2020/07/21
+// Title Font - VTF Lment
+// https://velvetyne.fr/fonts/lment/
+// Main font - Jost
+// https://indestructibletype.com/Jost.html
+
 #include "plugin.hpp"
 #include "../dep/lib/samplerate.h"
 
@@ -303,6 +310,12 @@ struct Rasoir : Module
 			outputs[LOW_OUTPUT].setVoltage(output);
 		}
 
+		// DC Filter for main output
+		if (params[DC_PARAM].getValue())
+		{
+			output = dcFilter.process(output);
+		}
+
 		// Dry/Wet
 		float wet = params[WET_PARAM].getValue();
 		wet += inputs[WET_INPUT].getVoltage() * 0.1;
@@ -311,10 +324,6 @@ struct Rasoir : Module
 		output = crossfade(input, output, wet);
 
 		// Output main
-		if (params[DC_PARAM].getValue())
-		{
-			output = dcFilter.process(output);
-		}
 		outputs[OUT_OUTPUT].setVoltage(output);
 	}
 };

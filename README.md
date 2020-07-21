@@ -58,6 +58,12 @@ By default, PSI OP has a DC offset filter on it's output. This can be toggled vi
 
 The opal wavetable used in PSI OP is taken from [ValleyRack](https://github.com/ValleyAudio/ValleyRackFree/tree/v1.0/src/Common/Wavetables)
 
+## Rasoir
+
+![Image of Rasoir](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFRasoir.png)
+
+Rasoir is an asymmetrical voltage processor. It's based on the the types of distortion found in modules like [Autodafe's FoldBack](https://github.com/antoniograzioli/Autodafe/blob/master/src/FoldBack.cpp) and [HetrickCV's Waveshape](https://github.com/mhetrick/hetrickcv/blob/master/src/Waveshape.cpp). What makes Rasoir unique is it's ability to slice a waveform into two components that lie above or below a threshold voltage and process those components seperately. Both high and low components can be shifted in time, clipped, pinched, folded and slewed. The top row of controls and jacks affects the high component, and the lower row the low component. Each component has it's own output, and they're combined on the main output. The main output also has dry/wet control and a DC offset filter.
+
 ## Sigma
 
 ![Image of Sigma](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFSigma.png)
