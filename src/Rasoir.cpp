@@ -136,6 +136,7 @@ struct Rasoir : Module
 		THRESH_PARAM,
 		WET_PARAM,
 		THRESHTRIM_PARAM,
+		DC_PARAM,
 		LOWSHIFTTRIM_PARAM,
 		HIGHSHIFTTRIM_PARAM,
 		LOWPINCHTRIM_PARAM,
@@ -184,12 +185,15 @@ struct Rasoir : Module
 	SlewLimiter slewLims[2];
 	SimpleDelay delays[2];
 
+	DCBlock dcFilter;
+
 	Rasoir()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(THRESH_PARAM, -10.f, 10.f, 0.f, "");
 		configParam(WET_PARAM, 0.f, 1.f, 1.f, "");
 		configParam(THRESHTRIM_PARAM, -1.f, 1.f, 0.f, "");
+		configParam(DC_PARAM, 0.f, 1.f, 1.f, "");
 		for (int i = 0; i < 8; ++i)
 		{
 			configParam(LOWSHIFTTRIM_PARAM + i, -1.f, 1.f, 0.f, "");
@@ -307,6 +311,10 @@ struct Rasoir : Module
 		output = crossfade(input, output, wet);
 
 		// Output main
+		if (params[DC_PARAM].getValue())
+		{
+			output = dcFilter.process(output);
+		}
 		outputs[OUT_OUTPUT].setVoltage(output);
 	}
 };
@@ -326,6 +334,7 @@ struct RasoirWidget : ModuleWidget
 		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(30.084, 23.404)), module, Rasoir::THRESH_PARAM));
 		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(78.503, 23.404)), module, Rasoir::WET_PARAM));
 		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(19.14, 23.864)), module, Rasoir::THRESHTRIM_PARAM));
+		addParam(createParamCentered<CKSS>(mm2px(Vec(50.8, 36.251)), module, Rasoir::DC_PARAM));
 
 		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(17.82, 90.023)), module, Rasoir::LOWSHIFTTRIM_PARAM));
 		addParam(createParamCentered<FF06GKnob>(mm2px(Vec(17.82, 48.282)), module, Rasoir::HIGHSHIFTTRIM_PARAM));
