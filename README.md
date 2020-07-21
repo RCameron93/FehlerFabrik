@@ -64,6 +64,8 @@ The opal wavetable used in PSI OP is taken from [ValleyRack](https://github.com/
 
 Rasoir is an asymmetrical voltage processor. It's based on the the types of distortion found in modules like [Autodafe's FoldBack](https://github.com/antoniograzioli/Autodafe/blob/master/src/FoldBack.cpp) and [HetrickCV's Waveshape](https://github.com/mhetrick/hetrickcv/blob/master/src/Waveshape.cpp). What makes Rasoir unique is it's ability to slice a waveform into two components that lie above or below a threshold voltage and process those components seperately. Both high and low components can be shifted in time, clipped, pinched, folded and slewed. The top row of controls and jacks affects the high component, and the lower row the low component. Each component has it's own output, and they're combined on the main output. The main output also has dry/wet control and a DC offset filter.
 
+See [here](https://www.youtube.com/watch?v=nh-8XyOFzqo&feature=youtu.be) for a demo
+
 ## Sigma
 
 ![Image of Sigma](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFSigma.png)
