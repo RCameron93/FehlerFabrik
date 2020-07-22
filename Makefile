@@ -2,13 +2,13 @@
 RACK_DIR ?= ../..
 
 # FLAGS will be passed to both the C and C++ compiler
-FLAGS +=
+FLAGS += -Idep/include
 CFLAGS +=
 CXXFLAGS +=
 
 # Careful about linking to shared libraries, since you can't assume much about the user's environment and library search path.
 # Static libraries are fine, but they should be added to this plugin's build system.
-LDFLAGS += dep/lib/libsamplerate.a
+LDFLAGS += 
 
 # Add .cpp files to the build
 SOURCES += $(wildcard src/*.cpp)
@@ -17,6 +17,22 @@ SOURCES += $(wildcard src/*.cpp)
 # The compiled plugin and "plugin.json" are automatically added.
 DISTRIBUTABLES += res
 DISTRIBUTABLES += $(wildcard LICENSE*)
+
+
+# Static libs
+libsamplerate := dep/lib/libsamplerate.a
+OBJECTS += $(libsamplerate)
+
+# Dependencies
+DEPS += $(libsamplerate)
+
+$(libsamplerate):
+	$(WGET) http://www.mega-nerd.com/SRC/libsamplerate-0.1.9.tar.gz
+	cd dep && $(UNTAR) ../libsamplerate-0.1.9.tar.gz
+	cd dep/libsamplerate-0.1.9 && $(CONFIGURE)
+	cd dep/libsamplerate-0.1.9 && $(MAKE)
+	cd dep/libsamplerate-0.1.9 && $(MAKE) install
+
 
 # Include the Rack plugin Makefile framework
 include $(RACK_DIR)/plugin.mk
