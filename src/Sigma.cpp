@@ -71,14 +71,14 @@ struct SigmaWidget : ModuleWidget
 
         addInput(createInputCentered<FF01JKPort>(mm2px(Vec(10.16, 65.896)), module, Sigma::IN_INPUT));
 
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 18.567)), module, Sigma::MINUS4_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 30.399)), module, Sigma::MINUS3_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 42.231)), module, Sigma::MINUS2_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 54.064)), module, Sigma::MINUS1_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 77.728)), module, Sigma::ADD1_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 89.561)), module, Sigma::ADD2_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 101.393)), module, Sigma::ADD3_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 113.225)), module, Sigma::ADD4_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 113.225)), module, Sigma::MINUS4_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 101.393)), module, Sigma::MINUS3_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 89.561)), module, Sigma::MINUS2_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 77.728)), module, Sigma::MINUS1_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 54.064)), module, Sigma::ADD1_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 42.231)), module, Sigma::ADD2_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 30.399)), module, Sigma::ADD3_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(10.16, 18.567)), module, Sigma::ADD4_OUTPUT));
     }
 };
 
