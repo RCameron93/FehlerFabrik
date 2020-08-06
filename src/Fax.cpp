@@ -399,7 +399,20 @@ struct Fax : Module
 	void onReset() override
 	{
 		// autoPoly = true;
+		running = false;
 		menuChannels = -1;
+		index = 0;
+		phase = 0.f;
+
+		for (int i = 0; i < 16; ++i)
+		{
+			newVolt[i] = 0.f;
+			out[i] = 0.f;
+			for (int j = 0; j < 32; ++j)
+			{
+				voltages[i][j] = 0.f;
+			}
+		}		
 	}
 
 	json_t *dataToJson() override
@@ -407,6 +420,8 @@ struct Fax : Module
 		json_t *rootJ = json_object();
 		// json_object_set_new(rootJ, "Auto Polyphony", json_boolean(autoPoly));
 		json_object_set_new(rootJ, "Polyphony Channels", json_integer(menuChannels));
+		json_object_set_new(rootJ, "Index", json_integer(index));
+		json_object_set_new(rootJ, "Running", json_integer(running));
 		
 		// stored voltages
 		json_t *chansJ = json_array();
@@ -437,7 +452,14 @@ struct Fax : Module
 		if (channelsJ)
 			menuChannels = json_integer_value(channelsJ);
 
+		json_t *indexJ = json_object_get(rootJ, "Index");
+		if (indexJ)
+			index = json_integer_value(indexJ);
 
+		json_t *runningJ = json_object_get(rootJ, "Running");
+		if (runningJ)
+			running = json_is_true(runningJ);
+			
 		json_t *chansJ = json_object_get(rootJ, "Stored Voltages");
 		if (chansJ)
 		{
