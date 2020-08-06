@@ -314,10 +314,21 @@ struct Fax : Module
 			{
 				newVolt[c] = inputs[IN_INPUT].getPolyVoltage(c);
 			}
-			// If there's less than 16 channels coming in, set the remaining ones to 0v
-			for (int c = channels; c < 16; ++c)
+			// If the input is monophonic then input is duplicated to all output channels
+			if (channels == 1)
 			{
-				newVolt[c] = 0;
+				for (int c = channels; c < 16; ++c)
+				{
+					newVolt[c] = newVolt[0];
+				}
+			}
+			else
+			{
+				// If there's less than 16 channels coming in, set the remaining ones to 0v
+				for (int c = channels; c < 16; ++c)
+				{
+					newVolt[c] = 0;
+				}
 			}
 			// NOTE - all of these newVolt values are just to represent whatever voltage is being input at the current frame
 			// They'll only be stored and output if recording is active.
@@ -327,10 +338,10 @@ struct Fax : Module
 			// No channels are connected, so we take our value to record from the big knob
 			newVolt[0] = params[CV_PARAM].getValue();
 			
-			// Set the rest of the channels to 0v
+			// All channels are set to the same voltage
 			for (int c = 1; c < 16; ++c)
 			{
-				newVolt[c] = 0;
+				newVolt[c] = newVolt[0];
 			}
 		}
 	}
