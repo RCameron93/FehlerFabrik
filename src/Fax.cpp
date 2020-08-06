@@ -88,10 +88,17 @@ struct Fax : Module
 	float phase = 0.f;
 	int index = 0;
 
-	float newVolt = 0.f;
-	float out = 0.f;
+	// Initialise in auto
+	// Auto - menuChannels == -1 - channels = N channels of whatever is input
+	// !Auto - menuChannels >= 0 - channels = set by context menu
+	int menuChannels = -1;
+	int channels = 1;
 
-	float voltages[32] = {0.f};
+	// One voltage to record and/or output for each poly channel
+	float newVolt[16] = {0.f};
+	float out[16] = {0.f};
+
+	float voltages[16][32] = {0.f};
 
 	float getRate()
 	{
@@ -109,9 +116,9 @@ struct Fax : Module
 		return steps;
 	}
 
-	void record(float newVolt)
+	void record(float newVolt, int c)
 	{
-		voltages[index] = newVolt;
+		voltages[c][index] = newVolt;
 	}
 
 	void advanceIndex()
@@ -120,14 +127,18 @@ struct Fax : Module
 
 		if (pre && recording)
 		{
-			record(newVolt);
+			for (int c = 0; c < 16; ++c){
+				record(newVolt[c], c);
+			}
 		}
 
 		++index;
 
 		if (!pre && recording)
 		{
-			record(newVolt);
+			for (int c = 0; c < 16; ++c){
+				record(newVolt[c], c);
+			}
 		}
 
 		if (index > max)
@@ -172,18 +183,39 @@ struct Fax : Module
 
 	void sequencerstep()
 	{
-		out = voltages[index];
+		for (int c = 0; c < 16; ++c)
+		{
+			out[c] = voltages[c][index];
+		}
 
-		float ledValue = out / 10.0;
 
-		// Set position lights
+		// Set every light to off
 		for (int i = 0; i < 32; ++i)
 		{
 			lights[LED1_LIGHT + i * 3].setBrightness(0);
 			lights[LED1_LIGHT + i * 3 + 1].setBrightness(0);
+			lights[LED1_LIGHT + i * 3 + 2].setBrightness(0);
 		}
-		lights[LED1_LIGHT + index * 3].setBrightness(0.5 + 0.5 * -1 * ledValue);
-		lights[LED1_LIGHT + index * 3 + 1].setBrightness(0.5 + 0.5 * ledValue);
+		
+		// Set the light for the current step
+		// LEDs only represent the output voltage if in mono
+		if (channels < 2)
+		{
+			float ledValue = out[0] / 10.0;
+
+			lights[LED1_LIGHT + index * 3].setBrightness(0.5 + 0.5 * -1 * ledValue);
+			lights[LED1_LIGHT + index * 3 + 1].setBrightness(0.5 + 0.5 * ledValue);
+			lights[LED1_LIGHT + index * 3 + 2].setBrightness(0);
+		}
+		// If poly, LEDs are solid blue.
+		else
+		{
+
+			lights[LED1_LIGHT + index * 3].setBrightness(0);
+			lights[LED1_LIGHT + index * 3 + 1].setBrightness(0);
+			lights[LED1_LIGHT + index * 3 + 2].setBrightness(1);
+		}
+		
 	}
 
 	void startControls()
@@ -260,6 +292,49 @@ struct Fax : Module
 		}
 	}
 
+	void getInputVoltages()
+	{
+		// Get number of channels
+		// Auto
+		if (menuChannels == -1)
+		{
+			channels = inputs[IN_INPUT].getChannels();
+		}
+		// Menu determined
+		else
+		{
+			channels = menuChannels + 1;
+		}
+		
+		// Get voltages, either from channels or from the knob
+		if (channels)
+		{
+			// Get voltage from each incoming poly channel
+			for (int c = 0; c < channels; ++c)
+			{
+				newVolt[c] = inputs[IN_INPUT].getPolyVoltage(c);
+			}
+			// If there's less than 16 channels coming in, set the remaining ones to 0v
+			for (int c = channels; c < 16; ++c)
+			{
+				newVolt[c] = 0;
+			}
+			// NOTE - all of these newVolt values are just to represent whatever voltage is being input at the current frame
+			// They'll only be stored and output if recording is active.
+		}
+		else
+		{
+			// No channels are connected, so we take our value to record from the big knob
+			newVolt[0] = params[CV_PARAM].getValue();
+			
+			// Set the rest of the channels to 0v
+			for (int c = 1; c < 16; ++c)
+			{
+				newVolt[c] = 0;
+			}
+		}
+	}
+	
 	void process(const ProcessArgs &args) override
 	{
 		startControls();
@@ -275,7 +350,7 @@ struct Fax : Module
 
 		recordControls();
 
-		newVolt = inputs[IN_INPUT].getNormalVoltage(params[CV_PARAM].getValue());
+		getInputVoltages();
 
 		skip();
 		reset();
@@ -285,14 +360,93 @@ struct Fax : Module
 		if (recording)
 		{
 			lights[REC_LIGHT].setBrightness(1);
-			out = newVolt;
+			for (int c = 0; c < channels; ++c)
+			{
+				out[c] = newVolt[c];
+			}
 		}
 		else
 		{
 			lights[REC_LIGHT].setBrightness(0);
 		}
 
-		outputs[OUT_OUTPUT].setVoltage(out);
+		for (int c = 0; c < channels; ++c)
+		{
+			outputs[OUT_OUTPUT].setVoltage(out[c], c);
+		}
+
+		outputs[OUT_OUTPUT].setChannels(channels);
+
+		// HACKY make sure we still output an already recorded channel if the current Nchans == 0
+		if (channels == 0)
+		{
+			outputs[OUT_OUTPUT].setVoltage(out[0], 0);
+			outputs[OUT_OUTPUT].setChannels(1);
+		}
+	}
+
+	void onReset() override
+	{
+		// autoPoly = true;
+		menuChannels = -1;
+	}
+
+	json_t *dataToJson() override
+	{
+		json_t *rootJ = json_object();
+		// json_object_set_new(rootJ, "Auto Polyphony", json_boolean(autoPoly));
+		json_object_set_new(rootJ, "Polyphony Channels", json_integer(menuChannels));
+		
+		// stored voltages
+		json_t *chansJ = json_array();
+		for (int i = 0; i < 16; ++i)
+		{
+			json_t *stepsJ = json_array();
+
+			for (int j = 0; j < 32; ++j)
+			{
+				json_array_insert_new(stepsJ, j, json_real(voltages[i][j]));
+			}
+
+			json_array_insert_new(chansJ, i, stepsJ);
+		}
+		json_object_set_new(rootJ, "Stored Voltages", chansJ);
+
+
+		return rootJ;
+	}
+
+	void dataFromJson(json_t *rootJ) override
+	{
+		// json_t *autoJ = json_object_get(rootJ, "Auto Polyphony");
+		// if (autoJ)
+		// 	autoPoly = json_boolean_value(autoJ);
+
+		json_t *channelsJ = json_object_get(rootJ, "Polyphony Channels");
+		if (channelsJ)
+			menuChannels = json_integer_value(channelsJ);
+
+
+		json_t *chansJ = json_object_get(rootJ, "Stored Voltages");
+		if (chansJ)
+		{
+			for (int i = 0; i < 16; ++i)
+			{
+				json_t *chanJ = json_array_get(chansJ, i);
+				if (chanJ)
+				{
+					for (int j = 0; j < 32; ++j)
+					{
+						json_t *stepJ = json_array_get(chanJ, j);
+						if (stepJ)
+						{
+							DEBUG("in here");
+							voltages[i][j] = (float) json_real_value(stepJ);
+						}
+					}
+				}
+			}
+		}
 	}
 };
 
@@ -335,6 +489,52 @@ struct FaxWidget : ModuleWidget
 			addChild(createLightCentered<MediumLight<RedGreenBlueLight>>(mm2px(Vec(ledPos[i][0], ledPos[i][1])), module, Fax::LED1_LIGHT + (i * 3)));
 		}
 		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(56.28, 113.225)), module, Fax::REC_LIGHT));
+	}
+
+	void appendContextMenu(Menu *menu) override
+	{
+		Fax *fax = dynamic_cast<Fax *>(module);
+		assert(fax);
+
+		struct ChannelValueItem : MenuItem {
+			Fax* fax;
+			int c;
+			void onAction(const event::Action& e) override {
+				fax->menuChannels = c;
+			}
+		};
+
+		struct FaxPolyChansItem : MenuItem
+		{
+			Fax *fax;
+			Menu* createChildMenu() override
+			{
+				Menu* menu = new Menu;
+				for (int c = -1; c < 16; ++c)
+				{
+					ChannelValueItem* item = new ChannelValueItem;
+					if (c == -1)
+						item->text = "Auto";
+					else
+						item->text = string::f("%d", c + 1);
+					item->rightText = CHECKMARK(fax->menuChannels == c);
+					item->fax = fax;
+					item->c = c;
+					menu->addChild(item);
+				}
+				return menu;
+			}
+		};
+
+        menu->addChild(new MenuEntry);
+		FaxPolyChansItem* faxPolyChansItem = new FaxPolyChansItem;
+		faxPolyChansItem->text = "Polyphony Channels";
+		if (fax->menuChannels == -1)
+			faxPolyChansItem->rightText = string::f("Auto ") + RIGHT_ARROW;
+		else
+			faxPolyChansItem->rightText = string::f("%d", fax->channels) + " " + RIGHT_ARROW;
+		faxPolyChansItem->fax = fax;
+		menu->addChild(faxPolyChansItem);
 	}
 };
 
