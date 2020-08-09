@@ -72,7 +72,8 @@
       "name": "Sigma",
       "description": "Fixed voltage adder",
       "tags": [
-        "Utility"
+        "Utility",
+        "Polyphonic"
       ]
     },
     {
@@ -81,7 +82,8 @@
       "description": "CV recording sequencer",
       "tags": [
         "Sequencer",
-        "Recording"
+        "Recording",
+        "Polyphonic"
       ]
     },
     {
