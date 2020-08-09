@@ -41,18 +41,25 @@ struct Sigma : Module
 
     void process(const ProcessArgs &args) override
     {
-        float input = inputs[IN_INPUT].getVoltage();
-        for (int i = 0; i < 4; ++i)
+        int channels = inputs[IN_INPUT].getChannels();
+
+        for (int c = 0; c < channels; ++c)
         {
-            float out = input + i - 4;
-            out = clamp(out, -10.f, 10.f);
-            outputs[MINUS4_OUTPUT + i].setVoltage(out);
+            float input = inputs[IN_INPUT].getPolyVoltage(c);
+            
+            for (int i = 0; i < 4; ++i)
+            {
+                float outAdd = input + 4 - i;
+                float outMinus = input - 4 + i;
+                // out = clamp(out, -10.f, 10.f);
+                outputs[MINUS4_OUTPUT + i].setVoltage(outMinus, c);
+                outputs[ADD4_OUTPUT - i].setVoltage(outAdd, c);
+            }
         }
-        for (int i = 0; i < 4; ++i)
+
+        for (int i = 0; i < NUM_OUTPUTS; ++i)
         {
-            float out = input + i + 1;
-            out = clamp(out, -10.f, 10.f);
-            outputs[ADD1_OUTPUT + i].setVoltage(out);
+            outputs[MINUS4_OUTPUT + i].setChannels(channels);
         }
     }
 };
@@ -65,9 +72,7 @@ struct SigmaWidget : ModuleWidget
         setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Sigma.svg")));
 
         addChild(createWidget<FFHexScrew>(Vec(0, 0)));
-        // addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
         addChild(createWidget<FFHexScrew>(Vec(box.size.x - 1 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-        // addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
         addInput(createInputCentered<FF01JKPort>(mm2px(Vec(10.16, 65.896)), module, Sigma::IN_INPUT));
 
