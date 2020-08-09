@@ -473,7 +473,6 @@ struct Fax : Module
 						json_t *stepJ = json_array_get(chanJ, j);
 						if (stepJ)
 						{
-							DEBUG("in here");
 							voltages[i][j] = (float) json_real_value(stepJ);
 						}
 					}
