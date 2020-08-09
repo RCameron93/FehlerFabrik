@@ -74,15 +74,15 @@ struct Planck : Module
     };
     enum InputIds
     {
-        QUANT_INPUT,
         DEPTH_INPUT,
+        DEPTH_AMT_INPUT,
         CRUSH_INPUT,
         RATE_INPUT,
         NUM_INPUTS
     };
     enum OutputIds
     {
-        QUANT_OUTPUT,
+        DEPTH_OUTPUT,
         CRUSH_OUTPUT,
         NUM_OUTPUTS
     };
@@ -91,8 +91,8 @@ struct Planck : Module
         NUM_LIGHTS
     };
 
-    BitDepthReducer reducer;
-    SampleRateCrusher crusher;
+    BitDepthReducer reducers[16];
+    SampleRateCrusher crushers[16];
 
     Planck()
     {
@@ -104,32 +104,52 @@ struct Planck : Module
     void process(const ProcessArgs &args) override
     {
         // Bit depth reduction
-        // Get parameters and input
-        float depthIn = inputs[QUANT_INPUT].getVoltage();
+        // Seperate amount of channels for the depth reducer and the rate crusher
+        int depthChannels = std::max(inputs[DEPTH_INPUT].getChannels(), 1);
+        // Get knob value
+        int globalDepthAmount = (int)params[DEPTH_PARAM].getValue();
+        // Array to hold output values, will be normalled to the rate crusher input
+        float depthOuts[depthChannels] = {0.f};
 
-        // TODO
-        // ADD OVERLOAD LIGHT IF |INPUT| > 5V
+        for (int c = 0; c < depthChannels; ++c)
+        {
+            float depthIn = inputs[DEPTH_INPUT].getPolyVoltage(c);
 
-        int depthAmount = (int)params[DEPTH_PARAM].getValue();
-        // 1V corresponds to 2^n - 1 bit depth
-        depthAmount -= (int)2 * inputs[DEPTH_INPUT].getVoltage();
-        depthAmount = clamp(depthAmount, 1, 16);
-        // Perform bit depth reduction
-        // Clamps input to 10v pp / +-5v
-        float depthOut = reducer.process(depthIn, depthAmount, 10.f);
-        outputs[QUANT_OUTPUT].setVoltage(depthOut);
+            // 1V corresponds to 2^n - 1 bit depth
+            int depthAmount = globalDepthAmount;
+            depthAmount -= (int)2 * inputs[DEPTH_AMT_INPUT].getPolyVoltage(c);
+            depthAmount = clamp(depthAmount, 1, 16);
+            // Perform bit depth reduction
+            // Clamps input to 10v pp / +-5v
+            depthOuts[c] = reducers[c].process(depthIn, depthAmount, 10.f);
+            outputs[DEPTH_OUTPUT].setVoltage(depthOuts[c], c);
+        }
+        outputs[DEPTH_OUTPUT].setChannels(depthChannels);
 
         // Sample rate crushing
-        // Get parameters and input
-        // Normalised to depth reduction output
-        float crushIn = inputs[CRUSH_INPUT].getNormalVoltage(depthOut);
-        int crushAmount = (int)params[RATE_PARAM].getValue();
-        crushAmount += (int)10 * inputs[RATE_INPUT].getVoltage();
-        crushAmount = clamp(crushAmount, 0, 100);
-        // Perfrom sample rate crushing
-        crusher.process(crushAmount, crushIn);
-        float crushOut = crusher.out;
-        outputs[CRUSH_OUTPUT].setVoltage(crushOut);
+        // Get number of channels
+        int crushChannels = inputs[CRUSH_INPUT].getChannels();
+        // Get knob value
+        int globalCrushAmount = (int)params[RATE_PARAM].getValue();
+        // If there's nothing connected we set the number of channels to be the same as the depth reducer
+        if (crushChannels == 0)
+            crushChannels = depthChannels;
+
+        for (int c = 0; c < crushChannels; ++c)
+        { 
+            // Get parameters and input
+            // Normalised to depth reduction output
+            float crushIn = inputs[CRUSH_INPUT].getNormalPolyVoltage(depthOuts[c], c);
+
+            int crushAmount = globalCrushAmount;
+            crushAmount += (int)10 * inputs[RATE_INPUT].getPolyVoltage(c);
+            crushAmount = clamp(crushAmount, 0, 100);
+            // Perfrom sample rate crushing
+            crushers[c].process(crushAmount, crushIn);
+            float crushOut = crushers[c].out;
+            outputs[CRUSH_OUTPUT].setVoltage(crushOut, c);
+        }
+        outputs[CRUSH_OUTPUT].setChannels(crushChannels);
     }
 };
 
@@ -150,11 +170,11 @@ struct PlanckWidget : ModuleWidget
 
         addInput(createInputCentered<FF01JKPort>(mm2px(Vec(30.757, 100.434)), module, Planck::CRUSH_INPUT));
         addInput(createInputCentered<FF01JKPort>(mm2px(Vec(30.757, 87.594)), module, Planck::RATE_INPUT));
-        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(9.843, 100.434)), module, Planck::QUANT_INPUT));
-        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(9.843, 87.594)), module, Planck::DEPTH_INPUT));
+        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(9.843, 100.434)), module, Planck::DEPTH_INPUT));
+        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(9.843, 87.594)), module, Planck::DEPTH_AMT_INPUT));
 
         addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(30.757, 113.225)), module, Planck::CRUSH_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(9.843, 113.225)), module, Planck::QUANT_OUTPUT));
+        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(9.843, 113.225)), module, Planck::DEPTH_OUTPUT));
     }
 };
 
