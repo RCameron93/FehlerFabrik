@@ -39,7 +39,7 @@ Luigi is a random digital clock and noise generator. It can use either an extern
 
 ![Image of Monte](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFMonte.png)
 
-Monte is a probabalistic trigger sequencer. It can use either an external or internal clock. For each step of the sequence, the probability of a trigger being generated is determined by a CV/knob combo. When CV is present the knobs act as an offset. All of the gates are OR'd to the main output as well as having their own output. Using CV on the Steps input allows for sequences of up to 32 steps.
+Monte is a probabilistic trigger sequencer. It can use either an external or internal clock. For each step of the sequence, the probability of a trigger being generated is determined by a CV/knob combo. When CV is present the knobs act as an offset. All of the gates are OR'd to the main output as well as having their own output. Using CV on the Steps input allows for sequences of up to 32 steps.
 
 ## Planck
 
