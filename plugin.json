@@ -97,6 +97,16 @@
         "Slew Limiter",
         "Delay"
       ]
+    },
+    {
+      "slug": "Chi",
+      "name": "Chi",
+      "description": "3 Band Crossover",
+      "tags": [
+        "Equalizer",
+        "Filter",
+        "Poly"
+      ]
     }
   ]
 }
