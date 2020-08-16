@@ -109,7 +109,7 @@ struct Planck : Module
         // Get knob value
         int globalDepthAmount = (int)params[DEPTH_PARAM].getValue();
         // Array to hold output values, will be normalled to the rate crusher input
-        float depthOuts[depthChannels] = {0.f};
+        float depthOuts[16] = {0.f};
 
         for (int c = 0; c < depthChannels; ++c)
         {
@@ -136,7 +136,7 @@ struct Planck : Module
             crushChannels = depthChannels;
 
         for (int c = 0; c < crushChannels; ++c)
-        { 
+        {
             // Get parameters and input
             // Normalised to depth reduction output
             float crushIn = inputs[CRUSH_INPUT].getNormalPolyVoltage(depthOuts[c], c);
