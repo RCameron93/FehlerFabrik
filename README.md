@@ -18,6 +18,13 @@ Arpanet is an attempt to recreate the ARP Instruments 1601 step sequencer. Readi
 
 Aspect is a basic clock divider and sequential gate sequencer. The left set of outputs are divisions of the input clock, and the right set are the sequence output. Gate highs are 10V, lows are 0v.
 
+## Chi
+
+![Image of Chi](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFChi.png)
+
+Chi is a three band polyphonic crossover, like those found in high-end DJ mixers and PA/HiFi system controllers. It uses 4th order Linkwitz-Riley filters to ensure flat and coherent recombination of audio bands. Two frequency cutoff controls determine where the low/mid (80Hz - 640Hz) and mid/high (1kHz - 8kHz) filter bands meet. Each band has it's own output with (voltage controlled) gain control (-inf dB through +6 dB), which can be used as feeds for multi-band processing, and a master output which recombines all bands - like a DJ mixers Isolator section.
+
+While Chi can work polyphonically, it's currently **not** very well optimised - I still need to figure out how to utilise SIMD for this kind of thing!
 
 ## Fax
 
