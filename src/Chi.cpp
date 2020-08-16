@@ -96,6 +96,116 @@ struct LinkwitzRileyFilter {
 	}
 };
 
+struct ButterWorthFilter {
+	// Second order
+	// Pirkle - Designing Audio Effect Plugins in C++
+	// Obviously we'll be tidying this one up at some point
+
+	// Coefficients for low pass
+	float aLP[3] = {0.f};
+	float bLP[2] = {0.f};
+
+	// Coefficients for high pass
+	float aHP[3] = {0.f};
+	float bHP[2] = {0.f};
+
+	// Samples for LP first stage
+	float xLP[3] = {0.f};
+	float yLP[3] = {0.f};
+
+	// Samples for LP second stage
+	float xLP_2[3] = {0.f};
+	float yLP_2[3] = {0.f};
+
+	// Sample for HP first stage
+	float xHP[3] = {0.f};
+	float yHP[3] = {0.f};
+
+	// Sample for HP second stage
+	float xHP_2[3] = {0.f};
+	float yHP_2[3] = {0.f};
+
+	void setCoefficients(float fc, float fs)
+	{
+		float cHP = tan(M_PI * fc / fs);
+		float cHP_2 = std::pow(cHP, 2.0);
+		float cHP_sqrt2 = cHP * M_SQRT2;
+		
+		
+		float cLP = 1 / cHP;
+		float cLP_2 = std::pow(cLP, 2.0);
+		float cLP_sqrt2 = cLP * M_SQRT2;
+
+		aLP[0] = 1 / (1 + cLP_sqrt2 + cLP_2);
+		aLP[1] = 2 * aLP[0];
+		aLP[2] = aLP[0];
+
+		bLP[0] = 2 * aLP[0] * (1 - cLP_2);
+		bLP[1] = aLP[0] * (1 - cLP_sqrt2 + cLP_2);
+
+
+		aHP[0] = 1 / (1 + cHP_sqrt2 + cHP_2);
+		aHP[1] = -2 * aHP[0];
+		aHP[2] = aHP[0];
+
+		bHP[0] = 2 * aHP[0] * (cHP_2 - 1);
+		bHP[1] = aHP[0] * (1 - cHP_sqrt2 + cHP_2);
+	}
+	float lowpass(float input)
+	{
+		// First stage
+		xLP[0] = input;
+
+		yLP[0] = aLP[0] * xLP[0] + aLP[1] * xLP[1] + aLP[2] * xLP[2] - bLP[0] * yLP[1] - bLP[1] * yLP[2];
+
+		xLP[2] = xLP[1];
+		xLP[1] = xLP[0];
+
+		yLP[2] = yLP[1];
+		yLP[1] = yLP[0];
+
+		// Second stage
+		xLP_2[0] = yLP[0];
+
+		yLP_2[0] = aLP[0] * xLP_2[0] + aLP[1] * xLP_2[1] + aLP[2] * xLP_2[2] - bLP[0] * yLP_2[1] - bLP[1] * yLP_2[2];
+
+		xLP_2[2] = xLP_2[1];
+		xLP_2[1] = xLP_2[0];
+
+		yLP_2[2] = yLP_2[1];
+		yLP_2[1] = yLP_2[0];
+
+		return yLP_2[0];
+	}
+
+	float highpass(float input)
+	{
+		// First Stage
+		xHP[0] = input;
+
+		yHP[0] = aHP[0] * xHP[0] + aHP[1] * xHP[1] + aHP[2] * xHP[2] - bHP[0] * yHP[1] - bHP[1] * yHP[2];
+
+		xHP[2] = xHP[1];
+		xHP[1] = xHP[0];
+
+		yHP[2] = yHP[1];
+		yHP[1] = yHP[0];
+
+		// Second Stage
+		xHP_2[0] = yHP[0];
+
+		yHP_2[0] = aHP[0] * xHP_2[0] + aHP[1] * xHP_2[1] + aHP[2] * xHP_2[2] - bHP[0] * yHP_2[1] - bHP[1] * yHP_2[2];
+
+		xHP_2[2] = xHP_2[1];
+		xHP_2[1] = xHP_2[0];
+
+		yHP_2[2] = yHP_2[1];
+		yHP_2[1] = yHP_2[0];
+
+		return yHP_2[0];
+	}
+};
+
 struct Chi : Module
 {
 	enum ParamIds
@@ -145,7 +255,7 @@ struct Chi : Module
 		configParam(LOW_X_PARAM, 0.f, 1.f, 0.5f, "Low/Mid X Freq");
 		configParam(HIGH_X_PARAM, 0.f, 1.f, 0.5f, "Mid/High X Freq");
 	}
-	LinkwitzRileyFilter filter[2];
+	ButterWorthFilter filter[2];
 
 	float lowFreqScale (float knobValue)
 	{
@@ -182,29 +292,24 @@ struct Chi : Module
 		highX = highFreqScale(highX);
 
 		// Process low/mid Xover
-		filter[0].setCutoff(lowX, args.sampleRate);
-		filter[0].setHPFCoeffs();
-		filter[0].setLPFCoeffs();
-		filter[0].setYCoeffs();
-		filter[0].process(in);
-
-		float lowOut = filter[0].outLP;
-		float midOut = filter[0].outHP;
+		filter[0].setCoefficients(lowX, args.sampleRate);
+		float lowOut = filter[0].lowpass(in);
+		float midOut = filter[0].highpass(in);
 
 		// Process mid/high Xover
-		filter[1].setCutoff(highX, args.sampleRate);
-		filter[1].setHPFCoeffs();
-		filter[1].setLPFCoeffs();
-		filter[1].setYCoeffs();
-		filter[1].process(midOut);
-		
-		midOut = filter[1].outLP;
-		float highOut = filter[1].outHP;
+		filter[1].setCoefficients(highX, args.sampleRate);
+		float highOut = filter[1].highpass(midOut);
+		midOut = filter[1].lowpass(midOut);
 
-		// Set outputs
+		// Set individual outputs
 		outputs[LOW_OUTPUT].setVoltage(lowOut);
 		outputs[MID_OUTPUT].setVoltage(midOut);
 		outputs[HIGH_OUTPUT].setVoltage(highOut);
+
+		// Reconstruct for main output
+		// This is pointless until the gain is implemented
+		float mainOut = lowOut + midOut + highOut;
+		outputs[OUT_OUTPUT].setVoltage(mainOut);
 	}
 };
 
