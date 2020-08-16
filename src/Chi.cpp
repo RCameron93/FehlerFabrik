@@ -166,81 +166,125 @@ struct Chi : Module
 		configParam(LOW_X_PARAM, 0.f, 1.f, 0.5f, "Low/Mid X Freq");
 		configParam(HIGH_X_PARAM, 0.f, 1.f, 0.5f, "Mid/High X Freq");
 	}
-	ButterWorthFilter filter[2];
+	ButterWorthFilter filter[32];
 
 	float lowFreqScale (float knobValue)
 	{
 		// Converts a knob value from 0 -> 0.5 -> 1 to 80 -> 225 -> 640
-		// float scaled = 540 * knobValue * knobValue + 20 * knobValue + 80;
-		return 600;
+		float scaled = 540 * knobValue * knobValue + 20 * knobValue + 80;
+		return scaled;
 	}
 
 	float highFreqScale (float knobValue)
 	{
 		// Converts a knob value from 0 -> 0.5 -> 1 to 1k -> 2.8k -> 8k
-		// float scaled = 6800 * knobValue * knobValue + 200 * knobValue + 1000;
-		return 2800;
+		float scaled = 6800 * knobValue * knobValue + 200 * knobValue + 1000;
+		return scaled;
+	}
+
+	bool anythingConnected()
+	{
+		for (int i = 0; i < NUM_OUTPUTS; ++i)
+		{
+			if (outputs[i].isConnected())
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	void process(const ProcessArgs &args) override
 	{
-		float in = inputs[IN_INPUT].getVoltage();
+		// Do we need to do anything?
+		if (!anythingConnected())
+		{
+			return;
+		}
 
-		/////////////// Get parameters
-
-		// Frequencies
-		// For now we're just taking MP2015 frequency ranges
-		// Start with all values [0:1]
-		float lowX = params[LOW_X_PARAM].getValue();
-		lowX += inputs[LOW_X_INPUT].getVoltage() / 10.f;
-		lowX = clamp(lowX, 0.f, 1.f);
-		// Convert to Hz
-		lowX = lowFreqScale(lowX);
-
-		// Start with all values [0:1]
-		float highX = params[HIGH_X_PARAM].getValue();
-		highX += inputs[HIGH_X_INPUT].getVoltage() / 10.f;
-		highX = clamp(highX, 0.f, 1.f);
-		// Convert to Hz
-		highX = highFreqScale(highX);
+		// Global Parameters#
+		// Xover Freqs
+		float lowXParam = params[LOW_X_PARAM].getValue();
+		float highXParam = params[HIGH_X_PARAM].getValue();
 
 		// Gains
-		// We go up to 2.0 because we want the right hand side of the knob to be 0dB -> +6dB
-
-		float gains[3] = {0.f};
+		float gainParams[3] = {0.f};
+		float gainCVTrimParams[3] = {0.f};
 		for (int i = 0; i < 3; ++i)
 		{
-			gains[i] = params[LOW_GAIN_PARAM + i].getValue();
-			gains[i] += inputs[LOW_GAIN_INPUT + i].getVoltage() * params[LOW_GAIN_CV_PARAM + i].getValue();
-			gains[i] = clamp(gains[i], 0.f, 2.f);
+			gainParams[i] = params[LOW_GAIN_PARAM + i].getValue();
+			gainCVTrimParams[i] = params[LOW_GAIN_CV_PARAM + i].getValue();
 		}
 
-		/////////////// Process
 
-		float outs[3] = {0.f};
+		int channels = inputs[IN_INPUT].getChannels();
 
-		// Process low/mid Xover
-		filter[0].setCoefficients(lowX, args.sampleRate);
-		outs[0] = filter[0].lowpass(in);
-		outs[1] = filter[0].highpass(in);
-
-		// Process mid/high Xover
-		filter[1].setCoefficients(highX, args.sampleRate);
-		outs[2] = filter[1].highpass(outs[1]);
-		outs[1] = filter[1].lowpass(outs[1]);
-
-		/////////////// Output
-		// Set gains and outs
-
-		float mainOut = 0.f;
-		for (int i = 0; i < 3; ++i)
+		for (int c = 0; c < channels; ++c)
 		{
-			outs[i] *= gains[i];
-			outputs[LOW_OUTPUT + i].setVoltage(outs[i]);
-			mainOut += outs[i];
+			float in = inputs[IN_INPUT].getPolyVoltage(c);
+
+			/////////////// Get parameters
+
+			// Frequencies
+			// For now we're just taking MP2015 frequency ranges
+			// Start with all values [0:1]
+			float lowX = lowXParam;
+			lowX += inputs[LOW_X_INPUT].getPolyVoltage(c) / 10.f;
+			lowX = clamp(lowX, 0.f, 1.f);
+			// Convert to Hz
+			lowX = lowFreqScale(lowX);
+
+			// Start with all values [0:1]
+			float highX = highXParam;
+			highX += inputs[HIGH_X_INPUT].getPolyVoltage(c) / 10.f;
+			highX = clamp(highX, 0.f, 1.f);
+			// Convert to Hz
+			highX = highFreqScale(highX);
+
+			// Gains
+			// We go up to 2.0 because we want the right hand side of the knob to be 0dB -> +6dB
+
+			float gains[3] = {0.f};
+			for (int i = 0; i < 3; ++i)
+			{
+				gains[i] = gainParams[i];
+				gains[i] += inputs[LOW_GAIN_INPUT + i].getPolyVoltage(c) * gainCVTrimParams[i];
+				gains[i] = clamp(gains[i], 0.f, 2.f);
+			}
+
+			/////////////// Process
+
+			float outs[3] = {0.f};
+
+			// Process low/mid Xover
+			filter[c * 2].setCoefficients(lowX, args.sampleRate);
+			outs[0] = filter[c * 2].lowpass(in);
+			outs[1] = filter[c * 2].highpass(in);
+
+			// Process mid/high Xover
+			filter[c * 2 + 1].setCoefficients(highX, args.sampleRate);
+			outs[2] = filter[c * 2 + 1].highpass(outs[1]);
+			outs[1] = filter[c * 2 + 1].lowpass(outs[1]);
+
+			/////////////// Output
+			// Set gains and outs
+
+			float mainOut = 0.f;
+			for (int i = 0; i < 3; ++i)
+			{
+				outs[i] *= gains[i];
+				outputs[LOW_OUTPUT + i].setVoltage(outs[i], c);
+				mainOut += outs[i];
+			}
+
+			outputs[OUT_OUTPUT].setVoltage(mainOut, c);
 		}
 
-		outputs[OUT_OUTPUT].setVoltage(mainOut);
+		for (int i = 0; i < NUM_OUTPUTS; ++i)
+		{
+			outputs[i].setChannels(channels);
+		}
 	}
 };
 
