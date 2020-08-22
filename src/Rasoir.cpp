@@ -7,26 +7,10 @@
 
 #include "plugin.hpp"
 #include "samplerate.h"
+#include "ffFilters.hpp"
+#include "ffCommon.hpp"
 
 #define HISTORY_SIZE (1 << 21)
-
-struct DCBlock
-{
-	// https://www.dsprelated.com/freebooks/filters/DC_Blocker.html
-
-	float xm1 = 0;
-	float ym1 = 0;
-
-	float r = 0.995;
-
-	float process(float x)
-	{
-		float y = x - xm1 + r * ym1;
-		xm1 = x;
-		ym1 = y;
-		return y;
-	}
-};
 
 struct SimpleDelay
 {

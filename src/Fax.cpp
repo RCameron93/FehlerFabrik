@@ -9,7 +9,7 @@
 #include "plugin.hpp"
 
 // Magic numbers for the led positions
-// These came from using tranform tools in illustrator
+// These came from using tranform tools in Adobe Illustrator
 // I should write a function to generate them within the widget struct, it's simple trig
 
 const float ledPos[32][2] = {
@@ -127,7 +127,8 @@ struct Fax : Module
 
 		if (pre && recording)
 		{
-			for (int c = 0; c < 16; ++c){
+			for (int c = 0; c < 16; ++c)
+			{
 				record(newVolt[c], c);
 			}
 		}
@@ -136,7 +137,8 @@ struct Fax : Module
 
 		if (!pre && recording)
 		{
-			for (int c = 0; c < 16; ++c){
+			for (int c = 0; c < 16; ++c)
+			{
 				record(newVolt[c], c);
 			}
 		}
@@ -188,7 +190,6 @@ struct Fax : Module
 			out[c] = voltages[c][index];
 		}
 
-
 		// Set every light to off
 		for (int i = 0; i < 32; ++i)
 		{
@@ -196,7 +197,7 @@ struct Fax : Module
 			lights[LED1_LIGHT + i * 3 + 1].setBrightness(0);
 			lights[LED1_LIGHT + i * 3 + 2].setBrightness(0);
 		}
-		
+
 		// Set the light for the current step
 		// LEDs only represent the output voltage if in mono
 		if (channels < 2)
@@ -215,7 +216,6 @@ struct Fax : Module
 			lights[LED1_LIGHT + index * 3 + 1].setBrightness(0);
 			lights[LED1_LIGHT + index * 3 + 2].setBrightness(1);
 		}
-		
 	}
 
 	void startControls()
@@ -305,7 +305,7 @@ struct Fax : Module
 		{
 			channels = menuChannels + 1;
 		}
-		
+
 		// Get voltages, either from channels or from the knob
 		if (channels)
 		{
@@ -337,7 +337,7 @@ struct Fax : Module
 		{
 			// No channels are connected, so we take our value to record from the big knob
 			newVolt[0] = params[CV_PARAM].getValue();
-			
+
 			// All channels are set to the same voltage
 			for (int c = 1; c < 16; ++c)
 			{
@@ -345,7 +345,7 @@ struct Fax : Module
 			}
 		}
 	}
-	
+
 	void process(const ProcessArgs &args) override
 	{
 		startControls();
@@ -412,7 +412,7 @@ struct Fax : Module
 			{
 				voltages[i][j] = 0.f;
 			}
-		}		
+		}
 	}
 
 	json_t *dataToJson() override
@@ -422,7 +422,7 @@ struct Fax : Module
 		json_object_set_new(rootJ, "Polyphony Channels", json_integer(menuChannels));
 		json_object_set_new(rootJ, "Index", json_integer(index));
 		json_object_set_new(rootJ, "Running", json_integer(running));
-		
+
 		// stored voltages
 		json_t *chansJ = json_array();
 		for (int i = 0; i < 16; ++i)
@@ -437,7 +437,6 @@ struct Fax : Module
 			json_array_insert_new(chansJ, i, stepsJ);
 		}
 		json_object_set_new(rootJ, "Stored Voltages", chansJ);
-
 
 		return rootJ;
 	}
@@ -459,7 +458,7 @@ struct Fax : Module
 		json_t *runningJ = json_object_get(rootJ, "Running");
 		if (runningJ)
 			running = json_is_true(runningJ);
-			
+
 		json_t *chansJ = json_object_get(rootJ, "Stored Voltages");
 		if (chansJ)
 		{
@@ -473,7 +472,7 @@ struct Fax : Module
 						json_t *stepJ = json_array_get(chanJ, j);
 						if (stepJ)
 						{
-							voltages[i][j] = (float) json_real_value(stepJ);
+							voltages[i][j] = (float)json_real_value(stepJ);
 						}
 					}
 				}
@@ -528,10 +527,12 @@ struct FaxWidget : ModuleWidget
 		Fax *fax = dynamic_cast<Fax *>(module);
 		assert(fax);
 
-		struct ChannelValueItem : MenuItem {
-			Fax* fax;
+		struct ChannelValueItem : MenuItem
+		{
+			Fax *fax;
 			int c;
-			void onAction(const event::Action& e) override {
+			void onAction(const event::Action &e) override
+			{
 				fax->menuChannels = c;
 			}
 		};
@@ -539,12 +540,12 @@ struct FaxWidget : ModuleWidget
 		struct FaxPolyChansItem : MenuItem
 		{
 			Fax *fax;
-			Menu* createChildMenu() override
+			Menu *createChildMenu() override
 			{
-				Menu* menu = new Menu;
+				Menu *menu = new Menu;
 				for (int c = -1; c < 16; ++c)
 				{
-					ChannelValueItem* item = new ChannelValueItem;
+					ChannelValueItem *item = new ChannelValueItem;
 					if (c == -1)
 						item->text = "Auto";
 					else
@@ -558,8 +559,8 @@ struct FaxWidget : ModuleWidget
 			}
 		};
 
-        menu->addChild(new MenuEntry);
-		FaxPolyChansItem* faxPolyChansItem = new FaxPolyChansItem;
+		menu->addChild(new MenuEntry);
+		FaxPolyChansItem *faxPolyChansItem = new FaxPolyChansItem;
 		faxPolyChansItem->text = "Polyphony Channels";
 		if (fax->menuChannels == -1)
 			faxPolyChansItem->rightText = string::f("Auto ") + RIGHT_ARROW;

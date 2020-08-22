@@ -5,7 +5,8 @@
 
 #include "plugin.hpp"
 #include "PSIOP.hpp"
-// #include "common.hpp"
+#include "ffCommon.hpp"
+#include "ffFilters.hpp"
 
 struct PSIOP : Module
 {
