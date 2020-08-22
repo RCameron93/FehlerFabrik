@@ -7,113 +7,87 @@
 
 #include "plugin.hpp"
 
-struct ButterWorthFilter {
-	// Second order
-	// Pirkle - Designing Audio Effect Plugins in C++
-	// Obviously we'll be tidying this one up at some point
-
-	// Coefficients for low pass
-	float aLP[3] = {0.f};
-	float bLP[2] = {0.f};
-
-	// Coefficients for high pass
-	float aHP[3] = {0.f};
-	float bHP[2] = {0.f};
-
-	// Samples for LP first stage
-	float xLP[3] = {0.f};
-	float yLP[3] = {0.f};
-
-	// Samples for LP second stage
-	float xLP_2[3] = {0.f};
-	float yLP_2[3] = {0.f};
-
-	// Sample for HP first stage
-	float xHP[3] = {0.f};
-	float yHP[3] = {0.f};
-
-	// Sample for HP second stage
-	float xHP_2[3] = {0.f};
-	float yHP_2[3] = {0.f};
-
-	void setCoefficients(float fc, float fs)
+struct ButterWorthFilter : dsp::IIRFilter<3, 3>
+{
+	enum Type
 	{
-		float cHP = tan(M_PI * fc / fs);
-		float cHP_2 = std::pow(cHP, 2.0);
-		float cHP_sqrt2 = cHP * M_SQRT2;
-		
-		
-		float cLP = 1 / cHP;
-		float cLP_2 = std::pow(cLP, 2.0);
-		float cLP_sqrt2 = cLP * M_SQRT2;
+		LOWPASS,
+		HIGHPASS
+	};
 
-		aLP[0] = 1 / (1 + cLP_sqrt2 + cLP_2);
-		aLP[1] = 2 * aLP[0];
-		aLP[2] = aLP[0];
-
-		bLP[0] = 2 * aLP[0] * (1 - cLP_2);
-		bLP[1] = aLP[0] * (1 - cLP_sqrt2 + cLP_2);
-
-
-		aHP[0] = 1 / (1 + cHP_sqrt2 + cHP_2);
-		aHP[1] = -2 * aHP[0];
-		aHP[2] = aHP[0];
-
-		bHP[0] = 2 * aHP[0] * (cHP_2 - 1);
-		bHP[1] = aHP[0] * (1 - cHP_sqrt2 + cHP_2);
-	}
-	float lowpass(float input)
+	ButterWorthFilter()
 	{
-		// First stage
-		xLP[0] = input;
-
-		yLP[0] = aLP[0] * xLP[0] + aLP[1] * xLP[1] + aLP[2] * xLP[2] - bLP[0] * yLP[1] - bLP[1] * yLP[2];
-
-		xLP[2] = xLP[1];
-		xLP[1] = xLP[0];
-
-		yLP[2] = yLP[1];
-		yLP[1] = yLP[0];
-
-		// Second stage
-		xLP_2[0] = yLP[0];
-
-		yLP_2[0] = aLP[0] * xLP_2[0] + aLP[1] * xLP_2[1] + aLP[2] * xLP_2[2] - bLP[0] * yLP_2[1] - bLP[1] * yLP_2[2];
-
-		xLP_2[2] = xLP_2[1];
-		xLP_2[1] = xLP_2[0];
-
-		yLP_2[2] = yLP_2[1];
-		yLP_2[1] = yLP_2[0];
-
-		return yLP_2[0];
+		setParameters(LOWPASS, 0.f, 0.f);
 	}
 
-	float highpass(float input)
+	/** Second order Butterworth filter
+	Coefficients taken from Pirkle - Designing Audio Effect Plugins in C++ 
+	Code based on filter.hpp
+	Calculates and sets the biquad transfer function coefficients.
+	fc: cutoff frequency
+	fs: sample rate
+	*/
+
+	void setParameters(int type, float fc, float fs)
+	{
+		// fn: normalised frequency
+		float fn = fc / fs;
+		// Used in HPF
+		float K = std::tan(M_PI * fn);
+		// Used in LPF
+		float C = 1 / K;
+
+		// Note - Pirkle uses a0... for the x coefficients, b0 for the y coefficients.
+		// Rack API is switched
+		switch (type)
+		{
+		case LOWPASS:
+			this->b[0] = 1 / (1 + M_SQRT2 * C + C * C);
+			this->b[1] = 2 * this->b[0];
+			this->b[2] = this->b[0];
+			this->a[0] = 2 * this->b[0] * (1 - C * C);
+			this->a[1] = this->b[0] * (1 - M_SQRT2 * C + C * C);
+			break;
+
+		case HIGHPASS:
+			this->b[0] = 1 / (1 + M_SQRT2 * K + K * K);
+			this->b[1] = -2 * this->b[0];
+			this->b[2] = this->b[0];
+			this->a[0] = 2 * this->b[0] * (K * K - 1);
+			this->a[1] = this->b[0] * (1 - M_SQRT2 * K + K * K);
+			break;
+
+		default:
+			break;
+		}
+	}
+};
+
+struct LinkwitzRiley4Filter
+{
+	/** 24 dB/Oct 4th order LR filter
+	Built from 2 cascaded 2nd order BW Filters
+	*/
+
+	// 0,2: LPF, 1,3: HPF
+	ButterWorthFilter butterWorth[4];
+	float outs[2] = {};
+
+	void process(float input, float fc, float fs)
 	{
 		// First Stage
-		xHP[0] = input;
+		butterWorth[0].setParameters(0, fc, fs);
+		outs[0] = butterWorth[0].process(input);
 
-		yHP[0] = aHP[0] * xHP[0] + aHP[1] * xHP[1] + aHP[2] * xHP[2] - bHP[0] * yHP[1] - bHP[1] * yHP[2];
-
-		xHP[2] = xHP[1];
-		xHP[1] = xHP[0];
-
-		yHP[2] = yHP[1];
-		yHP[1] = yHP[0];
+		butterWorth[1].setParameters(1, fc, fs);
+		outs[1] = butterWorth[1].process(input);
 
 		// Second Stage
-		xHP_2[0] = yHP[0];
+		butterWorth[2].setParameters(0, fc, fs);
+		outs[0] = butterWorth[2].process(outs[0]);
 
-		yHP_2[0] = aHP[0] * xHP_2[0] + aHP[1] * xHP_2[1] + aHP[2] * xHP_2[2] - bHP[0] * yHP_2[1] - bHP[1] * yHP_2[2];
-
-		xHP_2[2] = xHP_2[1];
-		xHP_2[1] = xHP_2[0];
-
-		yHP_2[2] = yHP_2[1];
-		yHP_2[1] = yHP_2[0];
-
-		return yHP_2[0];
+		butterWorth[3].setParameters(1, fc, fs);
+		outs[1] = butterWorth[3].process(outs[1]);
 	}
 };
 
@@ -166,16 +140,17 @@ struct Chi : Module
 		configParam(LOW_X_PARAM, 0.f, 1.f, 0.5f, "Low/Mid X Freq");
 		configParam(HIGH_X_PARAM, 0.f, 1.f, 0.5f, "Mid/High X Freq");
 	}
-	ButterWorthFilter filter[32];
+	// ButterWorth2Filter filter[32];
+	LinkwitzRiley4Filter filter[32];
 
-	float lowFreqScale (float knobValue)
+	float lowFreqScale(float knobValue)
 	{
 		// Converts a knob value from 0 -> 0.5 -> 1 to 80 -> 225 -> 640
 		float scaled = 540 * knobValue * knobValue + 20 * knobValue + 80;
 		return scaled;
 	}
 
-	float highFreqScale (float knobValue)
+	float highFreqScale(float knobValue)
 	{
 		// Converts a knob value from 0 -> 0.5 -> 1 to 1k -> 2.8k -> 8k
 		float scaled = 6800 * knobValue * knobValue + 200 * knobValue + 1000;
@@ -217,7 +192,6 @@ struct Chi : Module
 			gainCVTrimParams[i] = params[LOW_GAIN_CV_PARAM + i].getValue();
 		}
 
-
 		int channels = inputs[IN_INPUT].getChannels();
 
 		for (int c = 0; c < channels; ++c)
@@ -258,14 +232,24 @@ struct Chi : Module
 			float outs[3] = {0.f};
 
 			// Process low/mid Xover
-			filter[c * 2].setCoefficients(lowX, args.sampleRate);
-			outs[0] = filter[c * 2].lowpass(in);
-			outs[1] = filter[c * 2].highpass(in);
+			filter[c * 2].process(in, lowX, args.sampleRate);
+			outs[0] = filter[c * 2].outs[0];
+			outs[1] = filter[c * 2].outs[1];
 
 			// Process mid/high Xover
-			filter[c * 2 + 1].setCoefficients(highX, args.sampleRate);
-			outs[2] = filter[c * 2 + 1].highpass(outs[1]);
-			outs[1] = filter[c * 2 + 1].lowpass(outs[1]);
+			filter[c * 2 + 1].process(outs[1], highX, args.sampleRate);
+			outs[1] = filter[c * 2 + 1].outs[0];
+			outs[2] = filter[c * 2 + 1].outs[1];
+
+			// // Process low/mid Xover
+			// filter[c * 2].setCoefficients(lowX, args.sampleRate);
+			// outs[0] = filter[c * 2].lowpass(in);
+			// outs[1] = filter[c * 2].highpass(in);
+
+			// // Process mid/high Xover
+			// filter[c * 2 + 1].setCoefficients(highX, args.sampleRate);
+			// outs[2] = filter[c * 2 + 1].highpass(outs[1]);
+			// outs[1] = filter[c * 2 + 1].lowpass(outs[1]);
 
 			/////////////// Output
 			// Set gains and outs
