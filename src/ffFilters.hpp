@@ -130,6 +130,7 @@ struct LinkwitzRiley4Filter
 {
     /** 24 dB/Oct 4th order LR filter
 	Built from 2 cascaded 2nd order BW Filters
+    Computes both low and high pass in parallel
 	*/
 
     // 0,2: LPF, 1,3: HPF

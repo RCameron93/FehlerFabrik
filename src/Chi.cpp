@@ -8,90 +8,6 @@
 #include "plugin.hpp"
 #include "ffFilters.hpp"
 
-// struct ButterWorthFilter : dsp::IIRFilter<3, 3>
-// {
-// 	enum Type
-// 	{
-// 		LOWPASS,
-// 		HIGHPASS
-// 	};
-
-// 	ButterWorthFilter()
-// 	{
-// 		setParameters(LOWPASS, 0.f, 0.f);
-// 	}
-
-// 	/** Second order Butterworth filter
-// 	Coefficients taken from Pirkle - Designing Audio Effect Plugins in C++
-// 	Code based on filter.hpp
-// 	Calculates and sets the biquad transfer function coefficients.
-// 	fc: cutoff frequency
-// 	fs: sample rate
-// 	*/
-
-// 	void setParameters(int type, float fc, float fs)
-// 	{
-// 		// fn: normalised frequency
-// 		float fn = fc / fs;
-// 		// Used in HPF
-// 		float K = std::tan(M_PI * fn);
-// 		// Used in LPF
-// 		float C = 1 / K;
-
-// 		// Note - Pirkle uses a0... for the x coefficients, b0 for the y coefficients.
-// 		// Rack API is switched
-// 		switch (type)
-// 		{
-// 		case LOWPASS:
-// 			this->b[0] = 1 / (1 + M_SQRT2 * C + C * C);
-// 			this->b[1] = 2 * this->b[0];
-// 			this->b[2] = this->b[0];
-// 			this->a[0] = 2 * this->b[0] * (1 - C * C);
-// 			this->a[1] = this->b[0] * (1 - M_SQRT2 * C + C * C);
-// 			break;
-
-// 		case HIGHPASS:
-// 			this->b[0] = 1 / (1 + M_SQRT2 * K + K * K);
-// 			this->b[1] = -2 * this->b[0];
-// 			this->b[2] = this->b[0];
-// 			this->a[0] = 2 * this->b[0] * (K * K - 1);
-// 			this->a[1] = this->b[0] * (1 - M_SQRT2 * K + K * K);
-// 			break;
-
-// 		default:
-// 			break;
-// 		}
-// 	}
-// };
-
-// struct LinkwitzRiley4Filter
-// {
-// 	/** 24 dB/Oct 4th order LR filter
-// 	Built from 2 cascaded 2nd order BW Filters
-// 	*/
-
-// 	// 0,2: LPF, 1,3: HPF
-// 	ButterWorthFilter butterWorth[4];
-// 	float outs[2] = {};
-
-// 	void process(float input, float fc, float fs)
-// 	{
-// 		// First Stage
-// 		butterWorth[0].setParameters(0, fc, fs);
-// 		outs[0] = butterWorth[0].process(input);
-
-// 		butterWorth[1].setParameters(1, fc, fs);
-// 		outs[1] = butterWorth[1].process(input);
-
-// 		// Second Stage
-// 		butterWorth[2].setParameters(0, fc, fs);
-// 		outs[0] = butterWorth[2].process(outs[0]);
-
-// 		butterWorth[3].setParameters(1, fc, fs);
-// 		outs[1] = butterWorth[3].process(outs[1]);
-// 	}
-// };
-
 struct Chi : Module
 {
 	enum ParamIds
@@ -141,7 +57,6 @@ struct Chi : Module
 		configParam(LOW_X_PARAM, 0.f, 1.f, 0.5f, "Low/Mid X Freq");
 		configParam(HIGH_X_PARAM, 0.f, 1.f, 0.5f, "Mid/High X Freq");
 	}
-	// ButterWorth2Filter filter[32];
 	LinkwitzRiley4Filter filter[32];
 
 	float lowFreqScale(float knobValue)
@@ -241,16 +156,6 @@ struct Chi : Module
 			filter[c * 2 + 1].process(outs[1], highX, args.sampleRate);
 			outs[1] = filter[c * 2 + 1].outs[0];
 			outs[2] = filter[c * 2 + 1].outs[1];
-
-			// // Process low/mid Xover
-			// filter[c * 2].setCoefficients(lowX, args.sampleRate);
-			// outs[0] = filter[c * 2].lowpass(in);
-			// outs[1] = filter[c * 2].highpass(in);
-
-			// // Process mid/high Xover
-			// filter[c * 2 + 1].setCoefficients(highX, args.sampleRate);
-			// outs[2] = filter[c * 2 + 1].highpass(outs[1]);
-			// outs[1] = filter[c * 2 + 1].lowpass(outs[1]);
 
 			/////////////// Output
 			// Set gains and outs
