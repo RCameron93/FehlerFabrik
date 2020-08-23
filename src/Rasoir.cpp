@@ -181,23 +181,23 @@ struct Rasoir : Module
 	Rasoir()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(THRESH_PARAM, -10.f, 10.f, 0.f, "");
-		configParam(WET_PARAM, 0.f, 1.f, 1.f, "");
-		configParam(THRESHTRIM_PARAM, -1.f, 1.f, 0.f, "");
-		configParam(DC_PARAM, 0.f, 1.f, 1.f, "");
+		configParam(THRESH_PARAM, -10.f, 10.f, 0.f, "High/Low Threshold");
+		configParam(WET_PARAM, 0.f, 1.f, 1.f, "Wet/Dry Mix");
+		configParam(THRESHTRIM_PARAM, -1.f, 1.f, 0.f, "Threshold CV Amount");
+		configParam(DC_PARAM, 0.f, 1.f, 1.f, "DC Offset Filter");
 		for (int i = 0; i < 8; ++i)
 		{
-			configParam(LOWSHIFTTRIM_PARAM + i, -1.f, 1.f, 0.f, "");
+			configParam(LOWSHIFTTRIM_PARAM + i, -1.f, 1.f, 0.f, "CV Amount");
 		}
 
-		configParam(LOWSHIFT_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(HIGHSHIFT_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(LOWPINCH_PARAM, -1.f, 1.f, 0.f, "");
-		configParam(HIGHPINCH_PARAM, -1.f, 1.f, 0.f, "");
-		configParam(LOWFOLD_PARAM, 0.1f, 1.f, 1.f, "");
-		configParam(HIGHFOLD_PARAM, 0.1f, 1.f, 1.f, "");
-		configParam(LOWSLEW_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(HIGHSLEW_PARAM, 0.f, 1.f, 0.f, "");
+		configParam(LOWSHIFT_PARAM, 0.f, 1.f, 0.f, "Low Shift");
+		configParam(HIGHSHIFT_PARAM, 0.f, 1.f, 0.f, "High Shift");
+		configParam(LOWPINCH_PARAM, -1.f, 1.f, 0.f, "Low Pinch");
+		configParam(HIGHPINCH_PARAM, -1.f, 1.f, 0.f, "High Pinch");
+		configParam(LOWFOLD_PARAM, 0.1f, 1.f, 1.f, "Low Wavefold");
+		configParam(HIGHFOLD_PARAM, 0.1f, 1.f, 1.f, "High Wavefold");
+		configParam(LOWSLEW_PARAM, 0.f, 1.f, 0.f, "Low Slew Limiter");
+		configParam(HIGHSLEW_PARAM, 0.f, 1.f, 0.f, "High Slew Limiter");
 	}
 
 	float pincher(float input, float amount)
@@ -306,6 +306,10 @@ struct Rasoir : Module
 		{
 			output = dcFilter.process(output);
 		}
+
+		// Check for NaN
+		output = std::isfinite(output) ? output : 0.f;
+
 		outputs[OUT_OUTPUT].setVoltage(output);
 	}
 };

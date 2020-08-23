@@ -81,10 +81,10 @@ struct Monte : Module
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(INTCLOCK_PARAM, -2.f, 6.f, 2.f, "Clock Rate", "BPM", 2.f, 60.f);
-        configParam(STEPS_PARAM, 1.f, 16.f, 8.f, "");
+        configParam(STEPS_PARAM, 1.f, 16.f, 8.f, "Sequencer Steps");
         for (int i = 0; i < 8; ++i)
         {
-            configParam(PROB1_PARAM + i, 0.f, 1.f, 0.5f, "");
+            configParam(PROB1_PARAM + i, 0.f, 1.f, 0.5f, "Step Probability", " %");
         }
     }
 

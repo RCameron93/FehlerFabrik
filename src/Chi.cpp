@@ -163,6 +163,8 @@ struct Chi : Module
 			float mainOut = 0.f;
 			for (int i = 0; i < 3; ++i)
 			{
+				// Check for NaN
+				outs[i] = std::isfinite(outs[i]) ? outs[i] : 0.f;
 				outs[i] *= gains[i];
 				outputs[LOW_OUTPUT + i].setVoltage(outs[i], c);
 				mainOut += outs[i];

@@ -76,8 +76,8 @@ struct Arpanet : Module
 		configParam(SKIPTOGGLE_PARAM, 0.f, 2.f, 1.f, "");
 		configParam(STARTSTOP_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(CLOCK_PARAM, -2.f, 6.f, 2.f, "Clock Rate", "BPM", 2.f, 60.f);
-		configParam(FM_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(PULSE_PARAM, 0.05f, 1.f, 0.05f, "");
+		configParam(FM_PARAM, 0.f, 1.f, 0.f, "Clock FM Amount");
+		configParam(PULSE_PARAM, 0.05f, 1.f, 0.05f, "Clock Pulse-Width");
 		configParam(RESET_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(LENGTH_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(RANDOM_PARAM, 0.f, 1.f, 0.f, "");

@@ -233,6 +233,9 @@ struct PSIOP : Module
             output = dcBlock.process(output);
         }
 
+        // Check for NaN
+        output = std::isfinite(output) ? output : 0.f;
+
         // Send output signal to output jack
         outputs[OUT_OUTPUT].setVoltage(output * 3.5 * level);
     }
