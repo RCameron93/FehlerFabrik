@@ -84,4 +84,3 @@ Sigma is a basic preset voltage adder. Sometimes you just want to add 1V to some
 * add '/' to aspect divisor labels
 * sort out planck messy panel
 * fix mismatched dots on panels for snap knobs
-* why is only one "plus" on the arpanet panel showing?
