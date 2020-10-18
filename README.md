@@ -78,9 +78,3 @@ See [here](https://www.youtube.com/watch?v=nh-8XyOFzqo&feature=youtu.be) for a d
 ![Image of Sigma](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFSigma.png)
 
 Sigma is a basic preset voltage adder. Sometimes you just want to add 1V to something! The outputs are all capped to +/- 10v
-
-
-# TODO
-* add '/' to aspect divisor labels
-* sort out planck messy panel
-* fix mismatched dots on panels for snap knobs

@@ -1,5 +1,5 @@
-// Title font - Fruktur Reqular
-// https://fonts.google.com/specimen/Fruktur
+// Title font - Wesley Gothic
+// https://www.behance.net/gallery/53499505/Wesley-Gothic-Free-Font
 // Main font - Jost
 // https://indestructibletype.com/Jost.html
 
