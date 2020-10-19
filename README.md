@@ -20,7 +20,7 @@ Aspect is a basic clock divider and sequential gate sequencer. The left set of o
 
 ## Chi
 
-![Image of Chi](https://github.com/RCameron93/FehlerFabrik/blob/polyphony/docs/images/FFChi.png)
+![Image of Chi](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFChi.png)
 
 Chi is a three band polyphonic crossover, like those found in high-end DJ mixers and PA/HiFi system controllers. It uses 4th order Linkwitz-Riley filters to ensure flat and coherent recombination of audio bands. Two frequency cutoff controls determine where the low/mid (80Hz - 640Hz) and mid/high (1kHz - 8kHz) filter bands meet. Each band has it's own output with (voltage controlled) gain control (-inf dB through +6 dB), which can be used as feeds for multi-band processing, and a master output which recombines all bands - like a DJ mixers Isolator section.
 
