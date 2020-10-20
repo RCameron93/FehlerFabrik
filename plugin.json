@@ -5,12 +5,12 @@
   "license": "GPL-3.0-or-later",
   "brand": "Fehler Fabrik",
   "author": "Ross Cameron",
-  "authorEmail": "rosscameron93@gmail.com",
+  "authorEmail": "fehlerfabrik@gmail.com",
   "authorUrl": "",
-  "pluginUrl": "",
+  "pluginUrl": "https://github.com/RCameron93/FehlerFabrik/blob/master/README.md",
   "manualUrl": "",
   "sourceUrl": "https://github.com/RCameron93/FehlerFabrik",
-  "donateUrl": "",
+  "donateUrl": "paypal.me/rossdc93",
   "changelogUrl": "",
   "modules": [
     {
