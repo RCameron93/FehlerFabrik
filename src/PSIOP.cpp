@@ -61,6 +61,7 @@ struct PSIOP : Module
     bool blocking = true;  // DC filter enabled
     bool looping = false;  // Pitch envelope looping disabled
     bool indexMod = false; // Tigger level moduates FM mod index disabled
+    bool sync = false;     // Operators re-sync on trigger
 
     dsp::SchmittTrigger trigger;
     dsp::SchmittTrigger choke;
@@ -101,6 +102,15 @@ struct PSIOP : Module
         // All parameters are held on trigger input
         if (trigger.process(inputs[TRIGGER_INPUT].getVoltage() / 2.0f))
         {
+            if (sync)
+            {
+                // Reset operators
+                for (int i = 0; i < 4; ++i)
+                {
+                    operators[i].phase = 0.f;
+                }
+            }
+
             // Look for accent trigger
             if (accent.process(inputs[ACCENT_INPUT].getVoltage() / 2.0f))
             {
@@ -253,6 +263,7 @@ struct PSIOP : Module
         blocking = true;
         looping = false;
         indexMod = false;
+        sync = false;
     }
 
     json_t *dataToJson() override
@@ -261,6 +272,7 @@ struct PSIOP : Module
         json_object_set_new(rootJ, "DC Blocking", json_boolean(blocking));
         json_object_set_new(rootJ, "Speed Looping", json_boolean(looping));
         json_object_set_new(rootJ, "FM Index Modulation", json_boolean(indexMod));
+        json_object_set_new(rootJ, "Operator Resyncing", json_boolean(sync));
 
         return rootJ;
     }
@@ -278,6 +290,10 @@ struct PSIOP : Module
         json_t *indexJ = json_object_get(rootJ, "FM Index Modulation");
         if (indexJ)
             indexMod = json_boolean_value(indexJ);
+
+        json_t *syncJ = json_object_get(rootJ, "Operator Resyncing");
+        if (syncJ)
+            sync = json_boolean_value(syncJ);
     }
 };
 
@@ -374,6 +390,20 @@ struct PSIOPWidget : ModuleWidget
             }
         };
 
+        struct PSIOPSyncItem : MenuItem
+        {
+            PSIOP *psiop;
+
+            void onAction(const event::Action &e) override
+            {
+                psiop->sync = !psiop->sync;
+            }
+            void step() override
+            {
+                rightText = CHECKMARK(psiop->sync);
+            }
+        };
+
         menu->addChild(new MenuEntry);
         PSIOPBlockDCItem *blockDC = createMenuItem<PSIOPBlockDCItem>("DC Filter");
         blockDC->psiop = psiop;
@@ -381,9 +411,12 @@ struct PSIOPWidget : ModuleWidget
         PSIOPSpeedLoopItem *speedLoop = createMenuItem<PSIOPSpeedLoopItem>("Speed Ramp Looping");
         speedLoop->psiop = psiop;
         menu->addChild(speedLoop);
-        PSIOPIndexModItem *FMIndexMod = createMenuItem<PSIOPIndexModItem>("Trigger level modulates FM index");
+        PSIOPIndexModItem *FMIndexMod = createMenuItem<PSIOPIndexModItem>("Trigger mods index");
         FMIndexMod->psiop = psiop;
         menu->addChild(FMIndexMod);
+        PSIOPSyncItem *syncOp = createMenuItem<PSIOPSyncItem>("Operators sync on trigger");
+        syncOp->psiop = psiop;
+        menu->addChild(syncOp);
     }
 };
 
