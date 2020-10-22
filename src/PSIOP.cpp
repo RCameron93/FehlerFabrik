@@ -58,8 +58,9 @@ struct PSIOP : Module
     Ramp ramps[3];
 
     DCBlock dcBlock;
-    bool blocking = true;
-    bool looping = false;
+    bool blocking = true;  // DC filter enabled
+    bool looping = false;  // Pitch envelope looping disabled
+    bool indexMod = false; // Tigger level moduates FM mod index disabled
 
     dsp::SchmittTrigger trigger;
     dsp::SchmittTrigger choke;
@@ -111,6 +112,13 @@ struct PSIOP : Module
                 index = 0.6f;
                 level = 1.f;
             }
+
+            // Modulation index is determined by trigger level
+            if (indexMod)
+            {
+                index *= fabs(inputs[TRIGGER_INPUT].getVoltage() / 10.f);
+            }
+
             // Compute the start and end pitches
             startPitch = params[START_PARAM].getValue();
             startPitch += inputs[START_INPUT].getVoltage();
@@ -244,6 +252,7 @@ struct PSIOP : Module
     {
         blocking = true;
         looping = false;
+        indexMod = false;
     }
 
     json_t *dataToJson() override
@@ -251,6 +260,7 @@ struct PSIOP : Module
         json_t *rootJ = json_object();
         json_object_set_new(rootJ, "DC Blocking", json_boolean(blocking));
         json_object_set_new(rootJ, "Speed Looping", json_boolean(looping));
+        json_object_set_new(rootJ, "FM Index Modulation", json_boolean(indexMod));
 
         return rootJ;
     }
@@ -264,6 +274,10 @@ struct PSIOP : Module
         json_t *loopJ = json_object_get(rootJ, "Speed Looping");
         if (loopJ)
             looping = json_boolean_value(loopJ);
+
+        json_t *indexJ = json_object_get(rootJ, "FM Index Modulation");
+        if (indexJ)
+            indexMod = json_boolean_value(indexJ);
     }
 };
 
@@ -346,6 +360,20 @@ struct PSIOPWidget : ModuleWidget
             }
         };
 
+        struct PSIOPIndexModItem : MenuItem
+        {
+            PSIOP *psiop;
+
+            void onAction(const event::Action &e) override
+            {
+                psiop->indexMod = !psiop->indexMod;
+            }
+            void step() override
+            {
+                rightText = CHECKMARK(psiop->indexMod);
+            }
+        };
+
         menu->addChild(new MenuEntry);
         PSIOPBlockDCItem *blockDC = createMenuItem<PSIOPBlockDCItem>("DC Filter");
         blockDC->psiop = psiop;
@@ -353,6 +381,9 @@ struct PSIOPWidget : ModuleWidget
         PSIOPSpeedLoopItem *speedLoop = createMenuItem<PSIOPSpeedLoopItem>("Speed Ramp Looping");
         speedLoop->psiop = psiop;
         menu->addChild(speedLoop);
+        PSIOPIndexModItem *FMIndexMod = createMenuItem<PSIOPIndexModItem>("Trigger level modulates FM index");
+        FMIndexMod->psiop = psiop;
+        menu->addChild(FMIndexMod);
     }
 };
 
