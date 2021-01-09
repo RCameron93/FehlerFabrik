@@ -84,7 +84,7 @@ struct Monte : Module
         configParam(STEPS_PARAM, 1.f, 16.f, 8.f, "Sequencer Steps");
         for (int i = 0; i < 8; ++i)
         {
-            configParam(PROB1_PARAM + i, 0.f, 1.f, 0.5f, "Step Probability", " %");
+            configParam(PROB1_PARAM + i, 0.f, 1.f, 0.5f, "Step Probability", " %", 0.f, 100.f, 0.f);
         }
     }
 
