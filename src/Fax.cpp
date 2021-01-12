@@ -60,15 +60,15 @@ struct Fax : Module
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(NSTEPS_PARAM, 1.f, 32.f, 16.f, "Sequencer Steps");
 		configParam(CLOCK_PARAM, -2.f, 6.f, 2.f, "Clock Rate", "BPM", 2.f, 60.f);
-		configParam(STEPADV_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(RESET_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(CV_PARAM, -5.f, 5.f, 0.f, "");
-		configParam(START_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(REC_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(STARTTOGGLE_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(RECTOGGLE_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(PRE_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(AUTO_PARAM, 0.f, 1.f, 1.f, "");
+		configParam(STEPADV_PARAM, 0.f, 1.f, 0.f, "Step");
+		configParam(RESET_PARAM, 0.f, 1.f, 0.f, "Reset");
+		configParam(CV_PARAM, -5.f, 5.f, 0.f, "CV");
+		configParam(START_PARAM, 0.f, 1.f, 0.f, "Start");
+		configParam(REC_PARAM, 0.f, 1.f, 0.f, "Record");
+		configParam(STARTTOGGLE_PARAM, 0.f, 1.f, 0.f, "Start Mode");
+		configParam(RECTOGGLE_PARAM, 0.f, 1.f, 0.f, "Record Mode");
+		configParam(PRE_PARAM, 0.f, 1.f, 0.f, "Pre/Post");
+		configParam(AUTO_PARAM, 0.f, 1.f, 1.f, "Auto Stop");
 	}
 
 	dsp::SchmittTrigger stepTrigger;
