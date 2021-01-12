@@ -76,6 +76,19 @@ struct Sequencer
 	}
 };
 
+struct Sampler
+{
+	std::vector<float> sample;
+	bool recording = false;
+	int playhead = 0;
+	float output = 0.f;
+
+	float play(bool direction);
+	void reset(bool direction);
+	void erase();
+	void record(float in);
+};
+
 struct Nova : Module
 {
 	enum ParamIds
@@ -118,6 +131,7 @@ struct Nova : Module
 		NUM_LIGHTS
 	};
 	Sequencer sequencer;
+	Sampler samplers[8];
 
 	dsp::SchmittTrigger clockTrigger;
 	dsp::SchmittTrigger startTrigger;
@@ -127,8 +141,10 @@ struct Nova : Module
 
 	bool recording = false;
 
-	float outs[8] = {0.f};
-	float mainOut = 0.f;
+	// 0 = muted, 1 = active
+	bool mutes[8] = {1};
+	// 0 = fwd 1 = rev
+	bool reverses[8] = {0};
 
 	Nova()
 	{
@@ -163,6 +179,9 @@ struct Nova : Module
 
 	void process(const ProcessArgs &args) override
 	{
+		float outs[8] = {0.f};
+		float mainOut = 0.f;
+
 		// SEQUENCER
 		// Externally clocked only
 		// Check for reset
@@ -183,15 +202,41 @@ struct Nova : Module
 			sequencer.directionChange();
 		}
 
+		// Check for recording
+		if (recordTrigger.process(inputs[RECORD_INPUT].getVoltage() + params[RECORD_PARAM].getValue()))
+		{
+			recording = !recording;
+		}
+
 		if (sequencer.running)
 		{
+			int *index = &sequencer.index;
+
 			if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage()))
 			{
 				sequencer.advanceIndex();
+				samplers[*index].reset(reverses[*index]);
+			}
+
+			//SAMPLER
+			if (recording)
+			{
+				float in = inputs[IN_INPUT].getVoltage();
+				samplers[*index].record(in);
+
+				outs[*index] = in;
+				mainOut = in;
+			}
+			else
+			{
+				samplers[*index].play(reverses[*index]);
+
+				outs[*index] = samplers[*index].output;
+				mainOut = samplers[*index].output * (float)mutes[*index];
 			}
 		}
 
-		outputs[MAINOUT_OUTPUT].setVoltage(sequencer.index);
+		outputs[MAINOUT_OUTPUT].setVoltage(mainOut);
 
 		displayLED();
 	}
