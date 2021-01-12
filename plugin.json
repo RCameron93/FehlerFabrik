@@ -104,6 +104,16 @@
         "Filter",
         "Poly"
       ]
+    },
+    {
+      "slug": "Nova",
+      "name": "Nova",
+      "description": "Cut-up sequenced sampler",
+      "tags": [
+        "Sampler",
+        "Sequencer",
+        "Random"
+      ]
     }
   ]
 }
