@@ -42,6 +42,25 @@ struct Nova : Module
 		NUM_LIGHTS
 	};
 
+	dsp::SchmittTrigger clockTrigger;
+	dsp::SchmittTrigger startTrigger;
+	dsp::SchmittTrigger resetTrigger;
+	dsp::SchmittTrigger directionTrigger;
+	dsp::SchmittTrigger recordTrigger;
+
+	// Initialise stopped
+	bool running = false;
+	bool recording = false;
+	// 0 = fwd, 1 = rev, 2 = bounce, 3 = rnd
+	int direction = 0;
+	// Just used in bounce mode
+	int bounceDir = 0;
+
+	int index = 0; // Sequencer index
+
+	float outs[8] = {0.f};
+	float mainOut = 0.f;
+
 	Nova()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -64,8 +83,113 @@ struct Nova : Module
 		configParam(PITCH_PARAM, 0.f, 1.f, 0.5f, "Global Sample Pitch");
 	}
 
+	void resetCheck()
+	{
+		if (resetTrigger.process(inputs[RESET_INPUT].getVoltage() + params[RESET_PARAM].getValue()))
+		{
+			index = 0;
+		}
+	}
+
+	void startStopCheck()
+	{
+		if (startTrigger.process(inputs[START_INPUT].getVoltage() + params[START_PARAM].getValue()))
+		{
+			running = !running;
+		}
+	}
+
+	void directionCheck()
+	{
+		if (directionTrigger.process(inputs[DIRECTION_INPUT].getVoltage() + params[DIRECTION_PARAM].getValue()))
+		{
+			// Cycle through direction modes
+			++direction;
+			direction %= 4;
+		}
+	}
+
+	void advanceIndex()
+	{
+		if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage()))
+		{
+			switch (direction)
+			{
+			case 0:
+				++index;
+				index %= 8;
+				break;
+
+			case 1:
+				--index;
+				index = (index % 8 + 8) % 8;
+				break;
+
+			case 2:
+				if (bounceDir)
+				{
+					++index;
+					if (index == 8)
+					{
+						bounceDir = !bounceDir;
+						index = 7;
+					}
+				}
+				else
+				{
+					--index;
+					if (index == -1)
+					{
+						bounceDir = !bounceDir;
+						index = 0;
+					}
+				}
+
+				break;
+
+			case 3:
+			{
+				float rng = 7 * random::uniform();
+				index = (int)round(rng);
+			}
+			break;
+
+			default:
+				break;
+			}
+		}
+	}
+
+	void displayLED()
+	{
+		for (int i = 0; i < 8; ++i)
+		{
+			lights[SEQS_LIGHT + i].setBrightness(0);
+		}
+		lights[SEQS_LIGHT + index].setBrightness(1);
+	}
+
 	void process(const ProcessArgs &args) override
 	{
+		// SEQUENCER
+		// Externally clocked only
+		// Check for reset
+		resetCheck();
+
+		// Check for starts/stops
+		startStopCheck();
+
+		// Check for direction change
+		directionCheck();
+
+		if (running)
+		{
+			advanceIndex();
+		}
+
+		outputs[MAINOUT_OUTPUT].setVoltage(index);
+
+		displayLED();
 	}
 };
 
