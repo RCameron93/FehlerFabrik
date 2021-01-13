@@ -82,15 +82,16 @@ struct Sampler
 	bool recording = false;
 	int playhead = 0;
 	float output = 0.f;
-	bool finished = false;
+	bool finished = true;
 
 	float play(bool direction)
 	{
-		if (finished)
+		if (sample.empty() || finished)
 		{
 			output = 0.f;
 			return output;
 		}
+
 		if (direction)
 		{
 			// Reverse
@@ -134,6 +135,7 @@ struct Sampler
 	}
 	void record(float in)
 	{
+		sample.push_back(in);
 	}
 };
 
@@ -176,6 +178,7 @@ struct Nova : Module
 	enum LightIds
 	{
 		ENUMS(SEQS_LIGHT, 8),
+		REC_LIGHT,
 		NUM_LIGHTS
 	};
 	Sequencer sequencer;
@@ -278,14 +281,21 @@ struct Nova : Module
 
 				outs[*index] = in;
 				mainOut = in;
+				lights[REC_LIGHT].setBrightness(1);
 			}
 			else
 			{
 				samplers[*index].play(reverses[*index]);
 
 				outs[*index] = samplers[*index].output;
-				mainOut = samplers[*index].output * (float)mutes[*index];
+				mainOut = samplers[*index].output;
+				lights[REC_LIGHT].setBrightness(0);
 			}
+		}
+
+		for (int i = 0; i < 8; ++i)
+		{
+			outputs[OUTS_OUTPUT + i].setVoltage(outs[i]);
 		}
 
 		outputs[MAINOUT_OUTPUT].setVoltage(mainOut);
@@ -323,6 +333,8 @@ struct NovaWidget : ModuleWidget
 		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(16.335, 113.225)), module, Nova::RECORD_INPUT));
 
 		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(190.051, 110.766)), module, Nova::MAINOUT_OUTPUT));
+
+		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(40, 110.503)), module, Nova::REC_LIGHT));
 
 		for (int i = 0; i < 8; ++i)
 		{
