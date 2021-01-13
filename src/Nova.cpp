@@ -1,4 +1,5 @@
 #include "plugin.hpp"
+#include "ffCommon.hpp"
 
 struct Sequencer
 {
@@ -207,6 +208,7 @@ struct Nova : Module
 	};
 	Sequencer sequencer;
 	Sampler samplers[8];
+	Ramp ramp;
 
 	dsp::SchmittTrigger clockTrigger;
 	dsp::SchmittTrigger startTrigger;
@@ -242,7 +244,7 @@ struct Nova : Module
 		}
 
 		configParam(ATTACK_PARAM, 0.f, 1.f, 0.f, "Global Sample Attack");
-		configParam(RELEASE_PARAM, 0.f, 1.f, 0.f, "Global Sample Release");
+		configParam(RELEASE_PARAM, 0.f, 1.f, 1.f, "Global Sample Release");
 		configParam(PITCH_PARAM, 0.f, 1.f, 0.5f, "Global Sample Pitch");
 	}
 
@@ -284,6 +286,11 @@ struct Nova : Module
 		float mainOut = 0.f;
 
 		int jumpTo = -1;
+
+		// ENVELOPE
+		// Get rates
+		float attack = params[ATTACK_PARAM].getValue();
+		float release = params[RELEASE_PARAM].getValue();
 
 		// SEQUENCER
 		// Externally clocked only
@@ -356,6 +363,8 @@ struct Nova : Module
 				{
 					samplers[*index].erase();
 				}
+				ramp.out = 0.f;
+				ramp.gate = true;
 			}
 
 			if (jumpTo > -1)
@@ -366,6 +375,8 @@ struct Nova : Module
 				{
 					samplers[jumpTo].erase();
 				}
+				ramp.out = 0.f;
+				ramp.gate = true;
 			}
 			//SAMPLER
 			if (recording)
@@ -380,8 +391,11 @@ struct Nova : Module
 			{
 				samplers[*index].play(reverses[*index]);
 
-				outs[*index] = samplers[*index].output * gains[*index];
-				mainOut = samplers[*index].output * gains[*index] * mutes[*index];
+				ramp.process(0.3, attack, release, args.sampleTime, false);
+				float envelope = ramp.out;
+
+				outs[*index] = samplers[*index].output * gains[*index] * envelope;
+				mainOut = samplers[*index].output * gains[*index] * mutes[*index] * envelope;
 			}
 		}
 
@@ -389,6 +403,8 @@ struct Nova : Module
 		{
 			outputs[OUTS_OUTPUT + i].setVoltage(outs[i]);
 		}
+
+		outputs[OUTS_OUTPUT].setVoltage(ramp.out);
 
 		outputs[MAINOUT_OUTPUT].setVoltage(mainOut);
 
