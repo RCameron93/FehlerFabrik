@@ -91,9 +91,9 @@ struct PSIOP : Module
         configParam(RATE1_PARAM, 0.f, 1.f, 0.5f, "Operator 1 & 3 Release Envelope");
         configParam(RATE2_PARAM, 0.f, 1.f, 0.5f, "Operator 2 & 4 Release Envelope");
         configParam(SPEED_PARAM, 0.f, 1.f, 0.f, "Pitch Envelope Speed");
-        configParam(RATE2ATTEN_PARAM, -1.f, 1.f, 0.f, "Rate 2 Attenuverter");
-        configParam(WAVEATTEN_PARAM, -1.f, 1.f, 0.f, "Wave Attenuverter");
-        configParam(RATIOATTEN_PARAM, -1.f, 1.f, 0.f, "Ratio Attenuverter");
+        configParam(RATE2ATTEN_PARAM, -1.f, 1.f, 0.f, "Rate 2 Attenuverter", "%", 0.f, 100.f);
+        configParam(WAVEATTEN_PARAM, -1.f, 1.f, 0.f, "Wave Attenuverter", "%", 0.f, 100.f);
+        configParam(RATIOATTEN_PARAM, -1.f, 1.f, 0.f, "Ratio Attenuverter", "%", 0.f, 100.f);
     }
 
     void process(const ProcessArgs &args) override

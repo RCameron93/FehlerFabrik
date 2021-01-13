@@ -48,12 +48,12 @@ struct Chi : Module
 	Chi()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(LOW_GAIN_PARAM, 0.f, 2.f, 1.f, "Low Gain");
-		configParam(MID_GAIN_PARAM, 0.f, 2.f, 1.f, "Mid Gain");
-		configParam(HIGH_GAIN_PARAM, 0.f, 2.f, 1.f, "High Gain");
-		configParam(LOW_GAIN_CV_PARAM, -1.f, 1.f, 0.f, "Low Gain CV Trim");
-		configParam(MID_GAIN_CV_PARAM, -1.f, 1.f, 0.f, "Mid Gain CV Trim");
-		configParam(HIGH_GAIN_CV_PARAM, -1.f, 1.f, 0.f, "High Gain CV Trim");
+		configParam(LOW_GAIN_PARAM, 0.f, 1.99526f, 1.f, "Low Gain", "dB", -10.f, 20.f); // max value is slightly less than 2.f to get a max of 6dB voltage gain
+		configParam(MID_GAIN_PARAM, 0.f, 1.99526f, 1.f, "Mid Gain", "dB", -10.f, 20.f);
+		configParam(HIGH_GAIN_PARAM, 0.f, 1.99526f, 1.f, "High Gain", "dB", -10.f, 20.f);
+		configParam(LOW_GAIN_CV_PARAM, -1.f, 1.f, 0.f, "Low Gain CV Trim", "%", 0.f, 100.f);
+		configParam(MID_GAIN_CV_PARAM, -1.f, 1.f, 0.f, "Mid Gain CV Trim", "%", 0.f, 100.f);
+		configParam(HIGH_GAIN_CV_PARAM, -1.f, 1.f, 0.f, "High Gain CV Trim", "%", 0.f, 100.f);
 		configParam(LOW_X_PARAM, 0.f, 1.f, 0.49728f, "Low/Mid X Freq", "Hz", 8.f, 80.f); // default values slightly less than 0.5 to give the illusion that centre position produces a nice round freq
 		configParam(HIGH_X_PARAM, 0.f, 1.f, 0.49514f, "Mid/High X Freq", "Hz", 8.f, 1000.f);
 	}

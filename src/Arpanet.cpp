@@ -67,20 +67,20 @@ struct Arpanet : Module
 
 		for (int i = 0; i < 16; ++i)
 		{
-			configParam(GATE1_PARAM + i, 0.f, 2.f, 1.f, "");
-			configParam(SLIDER1_PARAM + i, 0.f, 12.f, 6.f, "");
+			configParam(GATE1_PARAM + i, 0.f, 2.f, 1.f, "Step Gate Assign");
+			configParam(SLIDER1_PARAM + i, 0.f, 12.f, 6.f, "Step Voltage", "V");
 		}
 
-		configParam(STARTTOGGLE_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(SKIP_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(SKIPTOGGLE_PARAM, 0.f, 2.f, 1.f, "");
-		configParam(STARTSTOP_PARAM, 0.f, 1.f, 0.f, "");
+		configParam(STARTTOGGLE_PARAM, 0.f, 1.f, 0.f, "Start CV Mode");
+		configParam(SKIP_PARAM, 0.f, 1.f, 0.f, "Skip Sequencer Step");
+		configParam(SKIPTOGGLE_PARAM, 0.f, 2.f, 1.f, "Gate Bus 3 Assign");
+		configParam(STARTSTOP_PARAM, 0.f, 1.f, 0.f, "Sequencer Start/Stop");
 		configParam(CLOCK_PARAM, -2.f, 6.f, 2.f, "Clock Rate", "BPM", 2.f, 60.f);
 		configParam(FM_PARAM, 0.f, 1.f, 0.f, "Clock FM Amount");
 		configParam(PULSE_PARAM, 0.05f, 1.f, 0.05f, "Clock Pulse-Width");
-		configParam(RESET_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(LENGTH_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(RANDOM_PARAM, 0.f, 1.f, 0.f, "");
+		configParam(RESET_PARAM, 0.f, 1.f, 0.f, "Sequencer Reset");
+		configParam(LENGTH_PARAM, 0.f, 1.f, 0.f, "Sequence Length");
+		configParam(RANDOM_PARAM, 0.f, 1.f, 0.f, "Direction Mode");
 	}
 
 	dsp::SchmittTrigger resetTrigger;

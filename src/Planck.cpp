@@ -39,7 +39,7 @@ struct Planck : Module
     Planck()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-        configParam(DEPTH_PARAM, 1.f, 16.f, 16.f, "Bit Depth Reduction");
+        configParam(DEPTH_PARAM, 1.f, 16.f, 16.f, "Bit Depth Reduction", "Bits");
         configParam(RATE_PARAM, 0.f, 100.f, 0.f, "Sample Rate Decimation");
     }
 

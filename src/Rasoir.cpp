@@ -181,13 +181,13 @@ struct Rasoir : Module
 	Rasoir()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(THRESH_PARAM, -10.f, 10.f, 0.f, "High/Low Threshold");
-		configParam(WET_PARAM, 0.f, 1.f, 1.f, "Wet/Dry Mix");
-		configParam(THRESHTRIM_PARAM, -1.f, 1.f, 0.f, "Threshold CV Amount");
+		configParam(THRESH_PARAM, -10.f, 10.f, 0.f, "High/Low Threshold", "V");
+		configParam(WET_PARAM, 0.f, 1.f, 1.f, "Wet/Dry Mix", "%", 0.f, 100.f);
+		configParam(THRESHTRIM_PARAM, -1.f, 1.f, 0.f, "Threshold CV Amount", "%", 0.f, 100.f);
 		configParam(DC_PARAM, 0.f, 1.f, 1.f, "DC Offset Filter");
 		for (int i = 0; i < 8; ++i)
 		{
-			configParam(LOWSHIFTTRIM_PARAM + i, -1.f, 1.f, 0.f, "CV Amount");
+			configParam(LOWSHIFTTRIM_PARAM + i, -1.f, 1.f, 0.f, "CV Amount", "%", 0.f, 100.f);
 		}
 
 		configParam(LOWSHIFT_PARAM, 0.f, 1.f, 0.f, "Low Shift");
