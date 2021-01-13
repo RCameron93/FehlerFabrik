@@ -82,11 +82,59 @@ struct Sampler
 	bool recording = false;
 	int playhead = 0;
 	float output = 0.f;
+	bool finished = false;
 
-	float play(bool direction);
-	void reset(bool direction);
-	void erase();
-	void record(float in);
+	float play(bool direction)
+	{
+		if (finished)
+		{
+			output = 0.f;
+			return output;
+		}
+		if (direction)
+		{
+			// Reverse
+			output = sample[playhead];
+			--playhead;
+			if (playhead < 0)
+			{
+				finished = true;
+			}
+			return output;
+		}
+		else
+		{
+			// Forward
+			output = sample[playhead];
+			++playhead;
+			if (playhead > sample.size() - 1)
+			{
+				finished = true;
+			}
+			return output;
+		}
+	}
+	void reset(bool direction)
+	{
+		finished = false;
+		if (direction)
+		{
+			// Reverse
+			playhead = sample.size() - 1;
+		}
+		else
+		{
+			// Forward
+			playhead = 0;
+		}
+	}
+	void erase()
+	{
+		sample.clear();
+	}
+	void record(float in)
+	{
+	}
 };
 
 struct Nova : Module
@@ -216,6 +264,10 @@ struct Nova : Module
 			{
 				sequencer.advanceIndex();
 				samplers[*index].reset(reverses[*index]);
+				if (recording)
+				{
+					samplers[*index].erase();
+				}
 			}
 
 			//SAMPLER
