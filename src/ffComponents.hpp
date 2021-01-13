@@ -23,6 +23,15 @@ struct FFDPW : app::SvgSwitch
     }
 };
 
+struct FFDPTW : app::SvgSwitch
+{
+    FFDPTW()
+    {
+        addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Components/FFDPW_0.svg")));
+        addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Components/FFDPW_1.svg")));
+    }
+};
+
 // Knobs
 struct FF06BKnob : RoundKnob
 {

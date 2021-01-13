@@ -79,7 +79,6 @@ struct Sequencer
 struct Sampler
 {
 	std::vector<float> sample;
-	bool recording = false;
 	int playhead = 0;
 	float output = 0.f;
 	bool finished = true;
@@ -137,6 +136,17 @@ struct Sampler
 	{
 		sample.push_back(in);
 	}
+
+	float playheadPercent()
+	{
+		// Returns playheads current position of sample playback as a decimal percentage
+		float position = (float)playhead;
+		float total = (float)sample.size();
+
+		float percent = (position + 1.f) / total;
+
+		return percent;
+	}
 };
 
 struct Nova : Module
@@ -177,7 +187,7 @@ struct Nova : Module
 	};
 	enum LightIds
 	{
-		ENUMS(SEQS_LIGHT, 8),
+		ENUMS(SEQS_LIGHT, 24),
 		REC_LIGHT,
 		NUM_LIGHTS
 	};
@@ -192,10 +202,12 @@ struct Nova : Module
 
 	bool recording = false;
 
+	float gains[8] = {1.f};
 	// 0 = muted, 1 = active
-	bool mutes[8] = {1};
+	float mutes[8] = {1.f};
 	// 0 = fwd 1 = rev
 	bool reverses[8] = {0};
+	bool skips[8] = {0};
 
 	Nova()
 	{
@@ -221,11 +233,39 @@ struct Nova : Module
 
 	void displayLED()
 	{
+		// Set all to off
 		for (int i = 0; i < 8; ++i)
 		{
-			lights[SEQS_LIGHT + i].setBrightness(0);
+			lights[SEQS_LIGHT + i * 3].setBrightness(0);
+			lights[SEQS_LIGHT + i * 3 + 1].setBrightness(0);
+			lights[SEQS_LIGHT + i * 3 + 2].setBrightness(0);
 		}
-		lights[SEQS_LIGHT + sequencer.index].setBrightness(1);
+
+		int *index = &sequencer.index;
+
+		if (!mutes[*index])
+		{
+			// Sample is muted
+			lights[SEQS_LIGHT + sequencer.index * 3].setBrightness(1);
+			lights[SEQS_LIGHT + sequencer.index * 3 + 1].setBrightness(0);
+			lights[SEQS_LIGHT + sequencer.index * 3 + 2].setBrightness(0);
+		}
+		else if (samplers[*index].sample.empty())
+		{
+			// No sample recorded
+			lights[SEQS_LIGHT + sequencer.index * 3].setBrightness(0);
+			lights[SEQS_LIGHT + sequencer.index * 3 + 1].setBrightness(1);
+			lights[SEQS_LIGHT + sequencer.index * 3 + 2].setBrightness(0);
+		}
+		else
+		{
+			// Sample has been recorded
+			lights[SEQS_LIGHT + sequencer.index * 3].setBrightness(samplers[*index].playheadPercent());
+			lights[SEQS_LIGHT + sequencer.index * 3 + 1].setBrightness(1);
+			lights[SEQS_LIGHT + sequencer.index * 3 + 2].setBrightness(0);
+
+			outputs[OUTS_OUTPUT].setVoltage((samplers[sequencer.index].playhead));
+		}
 	}
 
 	void process(const ProcessArgs &args) override
@@ -259,6 +299,20 @@ struct Nova : Module
 			recording = !recording;
 		}
 
+		// Check each sample players state
+		for (int i = 0; i < 8; ++i)
+		{
+			// Get gains
+			gains[i] = params[GAINS_PARAM + i].getValue();
+
+			// Check for mutes
+			// Annoyingly I think we have to have 0 = unmuted, 1 = muted for the __button__, so we do a funny conversion here to get an float we can multiply our sample by
+			mutes[i] = (float)!bool(params[MUTES_PARAM + i].getValue());
+
+			// Check for reverses
+			reverses[i] = (bool)params[REVERSES_PARAM + i].getValue();
+		}
+
 		if (sequencer.running)
 		{
 			int *index = &sequencer.index;
@@ -287,8 +341,8 @@ struct Nova : Module
 			{
 				samplers[*index].play(reverses[*index]);
 
-				outs[*index] = samplers[*index].output;
-				mainOut = samplers[*index].output;
+				outs[*index] = samplers[*index].output * gains[*index];
+				mainOut = samplers[*index].output * gains[*index] * mutes[*index];
 				lights[REC_LIGHT].setBrightness(0);
 			}
 		}
@@ -340,13 +394,13 @@ struct NovaWidget : ModuleWidget
 		{
 			float deltaX = 15.05f;
 			addParam(createParamCentered<FF10GKnob>(mm2px(Vec(61.531 + (i * deltaX), 23.43)), module, Nova::GAINS_PARAM + i));
-			addParam(createParamCentered<FFDPW>(mm2px(Vec(61.531 + (i * deltaX), 38.834)), module, Nova::MUTES_PARAM + i));
-			addParam(createParamCentered<FFDPW>(mm2px(Vec(61.531 + (i * deltaX), 54.238)), module, Nova::SKIPS_PARAM + i));
-			addParam(createParamCentered<FFDPW>(mm2px(Vec(61.531 + (i * deltaX), 69.642)), module, Nova::REVERSES_PARAM + i));
+			addParam(createParamCentered<FFDPTW>(mm2px(Vec(61.531 + (i * deltaX), 38.834)), module, Nova::MUTES_PARAM + i));
+			addParam(createParamCentered<FFDPTW>(mm2px(Vec(61.531 + (i * deltaX), 54.238)), module, Nova::SKIPS_PARAM + i));
+			addParam(createParamCentered<FFDPTW>(mm2px(Vec(61.531 + (i * deltaX), 69.642)), module, Nova::REVERSES_PARAM + i));
 			addParam(createParamCentered<FFDPW>(mm2px(Vec(61.531 + (i * deltaX), 85.046)), module, Nova::TRIGGERS_PARAM + i));
 			addInput(createInputCentered<FF01JKPort>(mm2px(Vec(61.531 + (i * deltaX), 97.487)), module, Nova::TRIGGERS_INPUT + i));
 			addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(61.531 + (i * deltaX), 110.766)), module, Nova::OUTS_OUTPUT + i));
-			addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(61.531 + (i * deltaX), 117.503)), module, Nova::SEQS_LIGHT + i));
+			addChild(createLightCentered<MediumLight<RedGreenBlueLight>>(mm2px(Vec(61.531 + (i * deltaX), 117.503)), module, Nova::SEQS_LIGHT + (i * 3)));
 		}
 	}
 };
