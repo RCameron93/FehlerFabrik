@@ -15,6 +15,14 @@ struct Sequencer
 		index = 0;
 	}
 
+	void setIndex(int step)
+	{
+		if (step < 8 && step > -1)
+		{
+			index = step;
+		}
+	}
+
 	void startStop()
 	{
 		running = !running;
@@ -94,23 +102,28 @@ struct Sampler
 		if (direction)
 		{
 			// Reverse
-			output = sample[playhead];
-			--playhead;
 			if (playhead < 0)
 			{
 				finished = true;
+				output = 0.f;
+				return output;
 			}
+			output = sample[playhead];
+			--playhead;
 			return output;
 		}
 		else
 		{
 			// Forward
-			output = sample[playhead];
-			++playhead;
 			if (playhead > sample.size() - 1)
 			{
 				finished = true;
+				output = 0.f;
+				return output;
 			}
+
+			output = sample[playhead];
+			++playhead;
 			return output;
 		}
 	}
@@ -120,7 +133,7 @@ struct Sampler
 		if (direction)
 		{
 			// Reverse
-			playhead = sample.size() - 1;
+			playhead = sample.empty() ? 0 : sample.size() - 1; // Is this necessary? if there's nothing in the sample vector then playhead shouldn't get used. probably best to be safe?
 		}
 		else
 		{
@@ -135,6 +148,7 @@ struct Sampler
 	void record(float in)
 	{
 		sample.push_back(in);
+		++playhead;
 	}
 
 	float playheadPercent()
@@ -196,9 +210,10 @@ struct Nova : Module
 
 	dsp::SchmittTrigger clockTrigger;
 	dsp::SchmittTrigger startTrigger;
-	dsp::SchmittTrigger resetTrigger;
+	dsp::SchmittTrigger clearTrigger;
 	dsp::SchmittTrigger directionTrigger;
 	dsp::SchmittTrigger recordTrigger;
+	dsp::SchmittTrigger jumpTriggers[8];
 
 	bool recording = false;
 
@@ -248,23 +263,18 @@ struct Nova : Module
 			// Sample is muted
 			lights[SEQS_LIGHT + sequencer.index * 3].setBrightness(1);
 			lights[SEQS_LIGHT + sequencer.index * 3 + 1].setBrightness(0);
-			lights[SEQS_LIGHT + sequencer.index * 3 + 2].setBrightness(0);
 		}
 		else if (samplers[*index].sample.empty())
 		{
 			// No sample recorded
 			lights[SEQS_LIGHT + sequencer.index * 3].setBrightness(0);
 			lights[SEQS_LIGHT + sequencer.index * 3 + 1].setBrightness(1);
-			lights[SEQS_LIGHT + sequencer.index * 3 + 2].setBrightness(0);
 		}
 		else
 		{
 			// Sample has been recorded
 			lights[SEQS_LIGHT + sequencer.index * 3].setBrightness(samplers[*index].playheadPercent());
 			lights[SEQS_LIGHT + sequencer.index * 3 + 1].setBrightness(1);
-			lights[SEQS_LIGHT + sequencer.index * 3 + 2].setBrightness(0);
-
-			outputs[OUTS_OUTPUT].setVoltage((samplers[sequencer.index].playhead));
 		}
 	}
 
@@ -273,12 +283,18 @@ struct Nova : Module
 		float outs[8] = {0.f};
 		float mainOut = 0.f;
 
+		int jumpTo = -1;
+
 		// SEQUENCER
 		// Externally clocked only
-		// Check for reset
-		if (resetTrigger.process(inputs[RESET_INPUT].getVoltage() + params[RESET_PARAM].getValue()))
+
+		// Check for clear
+		if (clearTrigger.process(inputs[RESET_INPUT].getVoltage() + params[RESET_PARAM].getValue()))
 		{
-			sequencer.reset();
+			for (int i = 0; i < 8; ++i)
+			{
+				samplers[i].erase();
+			}
 		}
 
 		// Check for starts/stops
@@ -311,6 +327,15 @@ struct Nova : Module
 
 			// Check for reverses
 			reverses[i] = (bool)params[REVERSES_PARAM + i].getValue();
+
+			// Check for skips
+			skips[i] = (bool)params[SKIPS_PARAM + i].getValue();
+
+			// Check for jumps
+			if (jumpTriggers[i].process(inputs[TRIGGERS_INPUT + i].getVoltage() + params[TRIGGERS_PARAM + i].getValue()))
+			{
+				jumpTo = i;
+			}
 		}
 
 		if (sequencer.running)
@@ -320,6 +345,12 @@ struct Nova : Module
 			if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage()))
 			{
 				sequencer.advanceIndex();
+
+				while (skips[*index])
+				{
+					sequencer.advanceIndex();
+				}
+
 				samplers[*index].reset(reverses[*index]);
 				if (recording)
 				{
@@ -327,6 +358,15 @@ struct Nova : Module
 				}
 			}
 
+			if (jumpTo > -1)
+			{
+				sequencer.setIndex(jumpTo);
+				samplers[jumpTo].reset(reverses[jumpTo]);
+				if (recording)
+				{
+					samplers[jumpTo].erase();
+				}
+			}
 			//SAMPLER
 			if (recording)
 			{
@@ -335,7 +375,6 @@ struct Nova : Module
 
 				outs[*index] = in;
 				mainOut = in;
-				lights[REC_LIGHT].setBrightness(1);
 			}
 			else
 			{
@@ -343,7 +382,6 @@ struct Nova : Module
 
 				outs[*index] = samplers[*index].output * gains[*index];
 				mainOut = samplers[*index].output * gains[*index] * mutes[*index];
-				lights[REC_LIGHT].setBrightness(0);
 			}
 		}
 
@@ -353,6 +391,8 @@ struct Nova : Module
 		}
 
 		outputs[MAINOUT_OUTPUT].setVoltage(mainOut);
+
+		lights[REC_LIGHT].setBrightness(recording);
 
 		displayLED();
 	}
@@ -388,7 +428,7 @@ struct NovaWidget : ModuleWidget
 
 		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(190.051, 110.766)), module, Nova::MAINOUT_OUTPUT));
 
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(40, 110.503)), module, Nova::REC_LIGHT));
+		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(33, 105.200)), module, Nova::REC_LIGHT));
 
 		for (int i = 0; i < 8; ++i)
 		{
