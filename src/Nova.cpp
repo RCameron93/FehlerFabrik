@@ -404,8 +404,6 @@ struct Nova : Module
 			outputs[OUTS_OUTPUT + i].setVoltage(outs[i]);
 		}
 
-		outputs[OUTS_OUTPUT].setVoltage(ramp.out);
-
 		outputs[MAINOUT_OUTPUT].setVoltage(mainOut);
 
 		lights[REC_LIGHT].setBrightness(recording);
