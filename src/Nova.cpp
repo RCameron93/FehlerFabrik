@@ -391,8 +391,13 @@ struct Nova : Module
 			{
 				samplers[*index].play(reverses[*index]);
 
+				float envelope = 1.f;
+				// Process the ramp even when it's not being used because params might be changed over the playback of a big buffer
 				ramp.process(0.3, attack, release, args.sampleTime, false);
-				float envelope = ramp.out;
+				if (attack > 0.f || release < 1.f)
+				{
+					envelope = ramp.out;
+				}
 
 				outs[*index] = samplers[*index].output * gains[*index] * envelope;
 				mainOut = samplers[*index].output * gains[*index] * mutes[*index] * envelope;
