@@ -87,14 +87,14 @@ struct Sequencer
 
 struct Sampler
 {
-	std::vector<float> sample;
+	std::vector<float> buffer;
 	int playhead = 0;
 	float output = 0.f;
 	bool finished = true;
 
 	float play(bool direction)
 	{
-		if (sample.empty() || finished)
+		if (buffer.empty() || finished)
 		{
 			output = 0.f;
 			return output;
@@ -109,21 +109,21 @@ struct Sampler
 				output = 0.f;
 				return output;
 			}
-			output = sample[playhead];
+			output = buffer[playhead];
 			--playhead;
 			return output;
 		}
 		else
 		{
 			// Forward
-			if (playhead > sample.size() - 1)
+			if (playhead > buffer.size() - 1)
 			{
 				finished = true;
 				output = 0.f;
 				return output;
 			}
 
-			output = sample[playhead];
+			output = buffer[playhead];
 			++playhead;
 			return output;
 		}
@@ -134,7 +134,7 @@ struct Sampler
 		if (direction)
 		{
 			// Reverse
-			playhead = sample.empty() ? 0 : sample.size() - 1; // Is this necessary? if there's nothing in the sample vector then playhead shouldn't get used. probably best to be safe?
+			playhead = buffer.empty() ? 0 : buffer.size() - 1; // Is this necessary? if there's nothing in the sample vector then playhead shouldn't get used. probably best to be safe?
 		}
 		else
 		{
@@ -144,11 +144,11 @@ struct Sampler
 	}
 	void erase()
 	{
-		sample.clear();
+		buffer.clear();
 	}
 	void record(float in)
 	{
-		sample.push_back(in);
+		buffer.push_back(in);
 		++playhead;
 	}
 
@@ -156,7 +156,7 @@ struct Sampler
 	{
 		// Returns playheads current position of sample playback as a decimal percentage
 		float position = (float)playhead;
-		float total = (float)sample.size();
+		float total = (float)buffer.size();
 
 		float percent = (position + 1.f) / total;
 
@@ -266,7 +266,7 @@ struct Nova : Module
 			lights[SEQS_LIGHT + sequencer.index * 3].setBrightness(1);
 			lights[SEQS_LIGHT + sequencer.index * 3 + 1].setBrightness(0);
 		}
-		else if (samplers[*index].sample.empty())
+		else if (samplers[*index].buffer.empty())
 		{
 			// No sample recorded
 			lights[SEQS_LIGHT + sequencer.index * 3].setBrightness(0);
