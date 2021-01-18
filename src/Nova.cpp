@@ -137,6 +137,7 @@ struct Sampler
 
 	void reset(bool direction, float pitch, float samplerate)
 	{
+		pitch = pow(4, -pitch);
 		// Check for sample rate conversion
 		if (pitch == 1.f)
 		{
@@ -159,7 +160,7 @@ struct Sampler
 		if (direction)
 		{
 			// Reverse
-			playhead = inBuffer.empty() ? 0 : inBuffer.size() - 1; // Is this necessary? if there's nothing in the sample vector then playhead shouldn't get used. probably best to be safe?
+			playhead = inBuffer.empty() ? 0 : outBuffer.size() - 1; // Is this necessary? if there's nothing in the sample vector then playhead shouldn't get used. probably best to be safe?
 		}
 		else
 		{
@@ -277,7 +278,7 @@ struct Nova : Module
 
 		configParam(ATTACK_PARAM, 0.f, 1.f, 0.f, "Global Sample Attack");
 		configParam(RELEASE_PARAM, 0.f, 1.f, 1.f, "Global Sample Release");
-		configParam(PITCH_PARAM, 0.1f, 2.f, 1.f, "Global Sample Pitch");
+		configParam(PITCH_PARAM, -1.f, 1.f, 0.f, "Global Sample Pitch", "x", 4.f);
 	}
 
 	void displayLED()
@@ -394,6 +395,7 @@ struct Nova : Module
 				}
 
 				samplers[*index].reset(reverses[*index], pitch, args.sampleTime);
+
 				if (recording)
 				{
 					samplers[*index].erase();
@@ -405,7 +407,9 @@ struct Nova : Module
 			if (jumpTo > -1)
 			{
 				sequencer.setIndex(jumpTo);
+
 				samplers[jumpTo].reset(reverses[jumpTo], pitch, args.sampleRate);
+
 				if (recording)
 				{
 					samplers[jumpTo].erase();
