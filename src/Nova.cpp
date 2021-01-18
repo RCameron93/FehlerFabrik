@@ -1,5 +1,6 @@
 #include "plugin.hpp"
 #include "ffCommon.hpp"
+#include <samplerate.h>
 
 struct Sequencer
 {
@@ -87,18 +88,46 @@ struct Sequencer
 
 struct Sampler
 {
-	std::vector<float> buffer;
+#define HISTORY_SIZE (1 << 21)
+
+	dsp::DoubleRingBuffer<float, HISTORY_SIZE> inBuffer;
+	dsp::DoubleRingBuffer<float, HISTORY_SIZE> outBuffer;
+	dsp::DoubleRingBuffer<float, HISTORY_SIZE> *outPtr;
 	int playhead = 0;
 	float output = 0.f;
 	bool finished = true;
+	SRC_DATA srcData;
+	FFLogger logger;
 
-	float play(bool direction)
+	float play(bool direction, float pitch, float samplerate)
 	{
-		if (buffer.empty() || finished)
+		if (inBuffer.empty() || finished)
 		{
 			output = 0.f;
+			logger.log("nothing in inBuffer", samplerate);
 			return output;
 		}
+
+		// if (pitch == 0.f)
+		// {
+		// 	outBuffer = inBuffer;
+		// }
+		// else if (pitch > 0.f)
+		// {
+		// 	// srcData.data_in = (const float *)&inBuffer;
+		// 	// srcData.data_out = (float *)&outBuffer;
+		// 	// srcData.input_frames = inBuffer.size();
+		// 	// srcData.output_frames = outBuffer.capacity();
+		// 	// srcData.src_ratio = 1.f;
+		// 	// DEBUG("pre");
+		// 	// int code = src_simple(&srcData, SRC_LINEAR, 1);
+		// 	// auto strcode = src_strerror(code);
+		// 	// DEBUG("post: %s", strcode);
+		// }
+		// else
+		// {
+		// 	//slower
+		// }
 
 		if (direction)
 		{
@@ -109,21 +138,21 @@ struct Sampler
 				output = 0.f;
 				return output;
 			}
-			output = buffer[playhead];
+			output = inBuffer.data[playhead];
 			--playhead;
 			return output;
 		}
 		else
 		{
 			// Forward
-			if (playhead > buffer.size() - 1)
+			if (playhead > inBuffer.size() - 1)
 			{
 				finished = true;
 				output = 0.f;
 				return output;
 			}
 
-			output = buffer[playhead];
+			output = inBuffer.data[playhead];
 			++playhead;
 			return output;
 		}
@@ -134,7 +163,7 @@ struct Sampler
 		if (direction)
 		{
 			// Reverse
-			playhead = buffer.empty() ? 0 : buffer.size() - 1; // Is this necessary? if there's nothing in the sample vector then playhead shouldn't get used. probably best to be safe?
+			playhead = inBuffer.empty() ? 0 : inBuffer.size() - 1; // Is this necessary? if there's nothing in the sample vector then playhead shouldn't get used. probably best to be safe?
 		}
 		else
 		{
@@ -144,11 +173,11 @@ struct Sampler
 	}
 	void erase()
 	{
-		buffer.clear();
+		inBuffer.clear();
 	}
 	void record(float in)
 	{
-		buffer.push_back(in);
+		inBuffer.push(in);
 		++playhead;
 	}
 
@@ -156,7 +185,7 @@ struct Sampler
 	{
 		// Returns playheads current position of sample playback as a decimal percentage
 		float position = (float)playhead;
-		float total = (float)buffer.size();
+		float total = (float)inBuffer.size();
 
 		float percent = (position + 1.f) / total;
 
@@ -266,7 +295,7 @@ struct Nova : Module
 			lights[SEQS_LIGHT + sequencer.index * 3].setBrightness(1);
 			lights[SEQS_LIGHT + sequencer.index * 3 + 1].setBrightness(0);
 		}
-		else if (samplers[*index].buffer.empty())
+		else if (samplers[*index].inBuffer.empty())
 		{
 			// No sample recorded
 			lights[SEQS_LIGHT + sequencer.index * 3].setBrightness(0);
@@ -291,6 +320,9 @@ struct Nova : Module
 		// Get rates
 		float attack = params[ATTACK_PARAM].getValue();
 		float release = params[RELEASE_PARAM].getValue();
+
+		// Get pitch change amount
+		float pitch = params[PITCH_PARAM].getValue();
 
 		// SEQUENCER
 		// Externally clocked only
@@ -389,10 +421,10 @@ struct Nova : Module
 			}
 			else
 			{
-				samplers[*index].play(reverses[*index]);
+				samplers[*index].play(reverses[*index], pitch, args.sampleRate);
 
 				float envelope = 1.f;
-				// Process the ramp even when it's not being used because params might be changed over the playback of a big buffer
+				// Process the ramp even when it's not being used because params might be changed over the playback of a big inBuffer
 				ramp.process(0.3, attack, release, args.sampleTime, false);
 				if (attack > 0.f || release < 1.f)
 				{
