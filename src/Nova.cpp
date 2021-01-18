@@ -90,10 +90,10 @@ struct Sampler
 {
 #define HISTORY_SIZE (1 << 21)
 
-	dsp::DoubleRingBuffer<float, HISTORY_SIZE> inBuffer;
-	float originalSamplerate = 441000.f;
-	dsp::DoubleRingBuffer<float, HISTORY_SIZE> outBuffer;
+	std::vector<float> inBuffer;
+	std::vector<float> outBuffer;
 	dsp::SampleRateConverter<1> inputSrc;
+	float originalSamplerate = 441000.f;
 	int playhead = 0;
 	float output = 0.f;
 	bool finished = true;
@@ -115,7 +115,7 @@ struct Sampler
 				output = 0.f;
 				return output;
 			}
-			output = outBuffer.data[playhead];
+			output = outBuffer[playhead];
 			--playhead;
 			return output;
 		}
@@ -129,7 +129,7 @@ struct Sampler
 				return output;
 			}
 
-			output = outBuffer.data[playhead];
+			output = outBuffer[playhead];
 			++playhead;
 			return output;
 		}
@@ -142,14 +142,16 @@ struct Sampler
 		{
 			outBuffer = inBuffer;
 		}
-		else
+		else if (!inBuffer.empty())
 		{
-			float newRate = originalSamplerate / pitch;
+			float newRate = originalSamplerate * pitch;
 			//Sample rate conversion
 			inputSrc.setRates(originalSamplerate, newRate);
 			int inLen = inBuffer.size();
-			int outLen = newRate * inLen / originalSamplerate;
-			inputSrc.process((dsp::Frame<1> *)inBuffer.startData(), &inLen, (dsp::Frame<1> *)outBuffer.startData(), &outLen);
+			int outLen = inLen * pitch;
+			outBuffer.reserve(outLen);
+			inputSrc.process((dsp::Frame<1> *)&inBuffer[0], &inLen, (dsp::Frame<1> *)&outBuffer[0], &outLen);
+			outBuffer.resize(outLen);
 		}
 
 		// Reset playback parameters
@@ -172,7 +174,7 @@ struct Sampler
 	}
 	void record(float in, float samplerate)
 	{
-		inBuffer.push(in);
+		inBuffer.push_back(in);
 		originalSamplerate = samplerate;
 		// ++playhead;
 	}
