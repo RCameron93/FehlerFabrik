@@ -1,3 +1,10 @@
+// Cut-up Sequenced Sampler
+// Ross Cameron 2021/01/18
+// Title font - Citytype Miami
+// https://www.citype.net/city/miami
+// Main font - Jost
+// https://indestructibletype.com/Jost.html
+
 #include "plugin.hpp"
 #include "ffCommon.hpp"
 #include <samplerate.h>
@@ -238,7 +245,8 @@ struct Nova : Module
 		ENUMS(REVERSES_PARAM, 8),
 		ENUMS(TRIGGERS_PARAM, 8),
 		ATTACK_PARAM,
-		RELEASE_PARAM,
+		bother with them
+			RELEASE_PARAM,
 		PITCH_PARAM,
 		NUM_PARAMS
 	};
