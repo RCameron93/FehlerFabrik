@@ -88,8 +88,6 @@ struct Sequencer
 
 struct Sampler
 {
-#define HISTORY_SIZE (1 << 21)
-
 	std::vector<float> inBuffer;
 	std::vector<float> outBuffer;
 	dsp::SampleRateConverter<1> inputSrc;
@@ -253,11 +251,6 @@ struct Nova : Module
 	// 0 = fwd 1 = rev
 	bool reverses[8] = {0};
 	bool skips[8] = {0};
-
-	~Nova()
-	{
-		// tidy up
-	}
 
 	Nova()
 	{
