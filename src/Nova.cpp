@@ -42,16 +42,19 @@ struct Sequencer
 		switch (direction)
 		{
 		case 0:
+			// Forward
 			++index;
 			index %= 8;
 			break;
 
 		case 1:
+			// Reverse
 			--index;
 			index = (index % 8 + 8) % 8;
 			break;
 
 		case 2:
+			// Bouncing (plays each end twice so as to be a factor of four)
 			if (bounceDir)
 			{
 				++index;
@@ -74,11 +77,12 @@ struct Sequencer
 			break;
 
 		case 3:
-		{
-			float rng = 7 * random::uniform();
-			index = (int)round(rng);
-		}
-		break;
+			// Random
+			{
+				float rng = 7 * random::uniform();
+				index = (int)round(rng);
+			}
+			break;
 
 		default:
 			break;
@@ -88,10 +92,15 @@ struct Sequencer
 
 struct Sampler
 {
+	// Buffer that holds the original recorded sample
 	std::vector<float> inBuffer;
+	// Buffer that is sent to output, may be sample rate converted or just a copy of the input buffer
 	std::vector<float> outBuffer;
+
 	dsp::SampleRateConverter<1> inputSrc;
 	float originalSamplerate = 441000.f;
+
+	// Iterator used to index through the output buffer
 	int playhead = 0;
 	float output = 0.f;
 	bool finished = true;
@@ -100,87 +109,112 @@ struct Sampler
 	{
 		if (outBuffer.empty() || finished)
 		{
+			// Reached the end of the buffer or there isn't anything there in the first place
 			output = 0.f;
 			return output;
 		}
 
-		if (direction)
+		if (!direction)
 		{
-			// Reverse
-			if (playhead < 0)
+			// Forward playback
+			if (playhead > (int)outBuffer.size() - 1)
 			{
-				finished = true;
-				output = 0.f;
-				return output;
-			}
-			output = outBuffer[playhead];
-			--playhead;
-			return output;
-		}
-		else
-		{
-			// Forward
-			if (playhead > outBuffer.size() - 1)
-			{
+				// Reached the end of the buffer
 				finished = true;
 				output = 0.f;
 				return output;
 			}
 
+			// Still within the buffer, send current sample in buffer to output
 			output = outBuffer[playhead];
+			// Increment index of the buffer
 			++playhead;
 			return output;
 		}
+		else
+		{
+			// Reverse playback
+			if (playhead < 0)
+			{
+				// Reached the start of the buffer (end of reverse playback)
+				finished = true;
+				output = 0.f;
+				return output;
+			}
+
+			// Still within the buffer, send current sample in buffer to output
+			output = outBuffer[playhead];
+			// Decrement index of buffer
+			--playhead;
+			return output;
+		}
 	}
 
+	// Called every time the sequencer begins playback from a sampler
 	void reset(bool direction, float pitch, float samplerate)
 	{
-		pitch = pow(4, -pitch);
-		// Check for sample rate conversion
-		if (pitch == 1.f)
-		{
-			outBuffer = inBuffer;
-		}
-		else if (!inBuffer.empty())
-		{
-			float newRate = originalSamplerate * pitch;
-			//Sample rate conversion
-			inputSrc.setRates(originalSamplerate, newRate);
-			int inLen = inBuffer.size();
-			int outLen = inLen * pitch;
-			outBuffer.reserve(outLen);
-			inputSrc.process((dsp::Frame<1> *)&inBuffer[0], &inLen, (dsp::Frame<1> *)&outBuffer[0], &outLen);
-			outBuffer.resize(outLen);
-		}
-
 		// Reset playback parameters
 		finished = false;
-		if (direction)
+		if (!direction)
 		{
-			// Reverse
-			playhead = inBuffer.empty() ? 0 : outBuffer.size() - 1; // Is this necessary? if there's nothing in the sample vector then playhead shouldn't get used. probably best to be safe?
+			// Forward - starting from the start of the buffer
+			playhead = 0;
 		}
 		else
 		{
-			// Forward
-			playhead = 0;
+			// Reverse - starting from the end of the buffer
+			playhead = outBuffer.empty() ? 0 : outBuffer.size() - 1; // Is this necessary? if there's nothing in the sample vector then playhead shouldn't get used. probably best to be safe?
+		}
+
+		// Check for sample rate conversion
+		if (pitch == 0.f)
+		{
+			// No conversion, output buffer is same as original sample
+			outBuffer = inBuffer;
+		}
+		else if (!inBuffer.empty()) // Only convert if there's something there to convert
+		{
+			// Expecting the input paramter to be between -1.f and 1.f
+			// Produces a pitch/speed change from 1/4 to 4 times
+			float ratio = pow(4, -pitch);
+
+			// New sample rate we're converting to
+			float newRate = originalSamplerate * ratio;
+
+			// Prepare sample rate convertor
+			inputSrc.setRates(originalSamplerate, newRate);
+			int inLen = inBuffer.size();
+			int outLen = inLen * ratio;
+
+			// Make sure we've got enough space reserved to fill the output buffer with interpolated samples
+			outBuffer.reserve(outLen);
+			// Process the sample rate conversion
+			inputSrc.process((dsp::Frame<1> *)&inBuffer[0], &inLen, (dsp::Frame<1> *)&outBuffer[0], &outLen);
+			// Trim off any excess from the output buffer
+			outBuffer.resize(outLen);
+			outBuffer.shrink_to_fit();
 		}
 	}
+
 	void erase()
 	{
+		// Reset the buffers back to empty and free any memory we're not using
 		inBuffer.clear();
+		inBuffer.shrink_to_fit();
 		outBuffer.clear();
+		outBuffer.shrink_to_fit();
 	}
+
 	void record(float in, float samplerate)
 	{
 		inBuffer.push_back(in);
 		originalSamplerate = samplerate;
-		// ++playhead;
 	}
 
 	float playheadPercent()
 	{
 		// Returns playheads current position of sample playback as a decimal percentage
+		// Used to determine LED colour during sample playback
 		float position = (float)playhead;
 		float total = (float)inBuffer.size();
 
@@ -301,6 +335,7 @@ struct Nova : Module
 		else
 		{
 			// Sample has been recorded
+			// Should change from green to yellow to indicate playback progress through the sample buffer
 			lights[SEQS_LIGHT + sequencer.index * 3].setBrightness(samplers[*index].playheadPercent());
 			lights[SEQS_LIGHT + sequencer.index * 3 + 1].setBrightness(1);
 		}
@@ -313,25 +348,17 @@ struct Nova : Module
 
 		int jumpTo = -1;
 
-		// ENVELOPE
+		// ENVELOPE PARAMS
 		// Get rates
+		// These are probably capable of being too fast, a lot of the knob range isn't useful
 		float attack = params[ATTACK_PARAM].getValue();
 		float release = params[RELEASE_PARAM].getValue();
 
 		// Get pitch change amount
 		float pitch = params[PITCH_PARAM].getValue();
 
-		// SEQUENCER
+		// SEQUENCER PARAMS
 		// Externally clocked only
-
-		// Check for clear
-		if (clearTrigger.process(inputs[RESET_INPUT].getVoltage() + params[RESET_PARAM].getValue()))
-		{
-			for (int i = 0; i < 8; ++i)
-			{
-				samplers[i].erase();
-			}
-		}
 
 		// Check for starts/stops
 		if (startTrigger.process(inputs[START_INPUT].getVoltage() + params[START_PARAM].getValue()))
@@ -345,12 +372,13 @@ struct Nova : Module
 			sequencer.directionChange();
 		}
 
-		// Check for recording
+		// Check for recording armed
 		if (recordTrigger.process(inputs[RECORD_INPUT].getVoltage() + params[RECORD_PARAM].getValue()))
 		{
 			recording = !recording;
 		}
 
+		// SAMPLERS PARAMS
 		// Check each sample players state
 		for (int i = 0; i < 8; ++i)
 		{
@@ -358,7 +386,7 @@ struct Nova : Module
 			gains[i] = params[GAINS_PARAM + i].getValue();
 
 			// Check for mutes
-			// Annoyingly I think we have to have 0 = unmuted, 1 = muted for the __button__, so we do a funny conversion here to get an float we can multiply our sample by
+			// Annoyingly I think we have to have 0 = unmuted, 1 = muted for the button to look right, so we do a funny conversion here to get a float we can multiply our sample by
 			mutes[i] = (float)!bool(params[MUTES_PARAM + i].getValue());
 
 			// Check for reverses
@@ -374,77 +402,118 @@ struct Nova : Module
 			}
 		}
 
+		// Check for sample buffer clear
+		if (clearTrigger.process(inputs[RESET_INPUT].getVoltage() + params[RESET_PARAM].getValue()))
+		{
+			for (int i = 0; i < 8; ++i)
+			{
+				samplers[i].erase();
+			}
+		}
+
+		// SEQUENCER PROCESSING
 		if (sequencer.running)
 		{
+			// A little easier on the eyes to use this
 			int *index = &sequencer.index;
 
+			// Sequencer advanced by clock trigger
+			// Really should encapsulate this so we're not repeating ourselves bellow
 			if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage()))
 			{
 				sequencer.advanceIndex();
 
+				// If the current step is skipped, just keep advancing until we find one that isn't
+				// Should this be a do while?
 				while (skips[*index])
 				{
 					sequencer.advanceIndex();
 				}
 
-				samplers[*index].reset(reverses[*index], pitch, args.sampleTime);
-
+				// If we're recording a new sample, clear out anything from the buffer
 				if (recording)
 				{
 					samplers[*index].erase();
 				}
+
+				// Reset the sampler playhead for this step so we can begin recording or playback
+				// This is also where we do any necessary sample rate conversion
+				samplers[*index].reset(reverses[*index], pitch, args.sampleTime);
+
+				// Reset the gain envelope
 				ramp.out = 0.f;
 				ramp.gate = true;
 			}
 
+			// Sequencer advanced by jumping to a specific step
 			if (jumpTo > -1)
 			{
 				sequencer.setIndex(jumpTo);
 
-				samplers[jumpTo].reset(reverses[jumpTo], pitch, args.sampleRate);
+				// We always play a triggered step regardless of whether it's skipped or not
 
+				// If we're recording a new sample, clear out anything from the buffer
 				if (recording)
 				{
 					samplers[jumpTo].erase();
 				}
+
+				// Reset the sampler playhead for this step so we can begin recording or playback
+				// This is also where we do any necessary sample rate conversion
+				samplers[jumpTo].reset(reverses[jumpTo], pitch, args.sampleRate);
+
+				// Reset the gain envelope
 				ramp.out = 0.f;
 				ramp.gate = true;
 			}
-			//SAMPLER
+
+			//SAMPLER PROCESSING
 			if (recording)
 			{
+				// Get the input
 				float in = inputs[IN_INPUT].getVoltage();
+
+				// Send it to the sampler, along with the sample rate it's recorded at
 				samplers[*index].record(in, args.sampleRate);
 
+				// Output whatever we're recording as we're recording it
 				outs[*index] = in;
 				mainOut = in;
 			}
 			else
 			{
+				// Playback
 				samplers[*index].play(reverses[*index]);
 
-				float envelope = 1.f;
 				// Process the ramp even when it's not being used because params might be changed over the playback of a big inBuffer
+				float envelope = 1.f;
 				ramp.process(0.3, attack, release, args.sampleTime, false);
+
+				// If the knobs are at default we don't use the envelope
 				if (attack > 0.f || release < 1.f)
 				{
 					envelope = ramp.out;
 				}
 
+				// Multiply the output from the sampler by the relevant gains and send it to the outs
 				outs[*index] = samplers[*index].output * gains[*index] * envelope;
 				mainOut = samplers[*index].output * gains[*index] * mutes[*index] * envelope;
 			}
 		}
 
+		// Set all the individual step outs
 		for (int i = 0; i < 8; ++i)
 		{
 			outputs[OUTS_OUTPUT + i].setVoltage(outs[i]);
 		}
 
+		// Set the master out
 		outputs[MAINOUT_OUTPUT].setVoltage(mainOut);
 
+		// If we're recording, turn the record light on
 		lights[REC_LIGHT].setBrightness(recording);
 
+		// Display the LED for the current step
 		displayLED();
 	}
 };
