@@ -91,43 +91,20 @@ struct Sampler
 #define HISTORY_SIZE (1 << 21)
 
 	dsp::DoubleRingBuffer<float, HISTORY_SIZE> inBuffer;
+	float originalSamplerate = 441000.f;
 	dsp::DoubleRingBuffer<float, HISTORY_SIZE> outBuffer;
-	dsp::DoubleRingBuffer<float, HISTORY_SIZE> *outPtr;
+	dsp::SampleRateConverter<1> inputSrc;
 	int playhead = 0;
 	float output = 0.f;
 	bool finished = true;
-	SRC_DATA srcData;
-	FFLogger logger;
 
-	float play(bool direction, float pitch, float samplerate)
+	float play(bool direction)
 	{
-		if (inBuffer.empty() || finished)
+		if (outBuffer.empty() || finished)
 		{
 			output = 0.f;
-			logger.log("nothing in inBuffer", samplerate);
 			return output;
 		}
-
-		// if (pitch == 0.f)
-		// {
-		// 	outBuffer = inBuffer;
-		// }
-		// else if (pitch > 0.f)
-		// {
-		// 	// srcData.data_in = (const float *)&inBuffer;
-		// 	// srcData.data_out = (float *)&outBuffer;
-		// 	// srcData.input_frames = inBuffer.size();
-		// 	// srcData.output_frames = outBuffer.capacity();
-		// 	// srcData.src_ratio = 1.f;
-		// 	// DEBUG("pre");
-		// 	// int code = src_simple(&srcData, SRC_LINEAR, 1);
-		// 	// auto strcode = src_strerror(code);
-		// 	// DEBUG("post: %s", strcode);
-		// }
-		// else
-		// {
-		// 	//slower
-		// }
 
 		if (direction)
 		{
@@ -138,27 +115,44 @@ struct Sampler
 				output = 0.f;
 				return output;
 			}
-			output = inBuffer.data[playhead];
+			output = outBuffer.data[playhead];
 			--playhead;
 			return output;
 		}
 		else
 		{
 			// Forward
-			if (playhead > inBuffer.size() - 1)
+			if (playhead > outBuffer.size() - 1)
 			{
 				finished = true;
 				output = 0.f;
 				return output;
 			}
 
-			output = inBuffer.data[playhead];
+			output = outBuffer.data[playhead];
 			++playhead;
 			return output;
 		}
 	}
-	void reset(bool direction)
+
+	void reset(bool direction, float pitch, float samplerate)
 	{
+		// Check for sample rate conversion
+		if (pitch == 1.f)
+		{
+			outBuffer = inBuffer;
+		}
+		else
+		{
+			float newRate = originalSamplerate / pitch;
+			//Sample rate conversion
+			inputSrc.setRates(originalSamplerate, newRate);
+			int inLen = inBuffer.size();
+			int outLen = newRate * inLen / originalSamplerate;
+			inputSrc.process((dsp::Frame<1> *)inBuffer.startData(), &inLen, (dsp::Frame<1> *)outBuffer.startData(), &outLen);
+		}
+
+		// Reset playback parameters
 		finished = false;
 		if (direction)
 		{
@@ -174,11 +168,13 @@ struct Sampler
 	void erase()
 	{
 		inBuffer.clear();
+		outBuffer.clear();
 	}
-	void record(float in)
+	void record(float in, float samplerate)
 	{
 		inBuffer.push(in);
-		++playhead;
+		originalSamplerate = samplerate;
+		// ++playhead;
 	}
 
 	float playheadPercent()
@@ -255,6 +251,11 @@ struct Nova : Module
 	bool reverses[8] = {0};
 	bool skips[8] = {0};
 
+	~Nova()
+	{
+		// tidy up
+	}
+
 	Nova()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -274,7 +275,7 @@ struct Nova : Module
 
 		configParam(ATTACK_PARAM, 0.f, 1.f, 0.f, "Global Sample Attack");
 		configParam(RELEASE_PARAM, 0.f, 1.f, 1.f, "Global Sample Release");
-		configParam(PITCH_PARAM, 0.f, 1.f, 0.5f, "Global Sample Pitch");
+		configParam(PITCH_PARAM, 0.1f, 2.f, 1.f, "Global Sample Pitch");
 	}
 
 	void displayLED()
@@ -390,7 +391,7 @@ struct Nova : Module
 					sequencer.advanceIndex();
 				}
 
-				samplers[*index].reset(reverses[*index]);
+				samplers[*index].reset(reverses[*index], pitch, args.sampleTime);
 				if (recording)
 				{
 					samplers[*index].erase();
@@ -402,7 +403,7 @@ struct Nova : Module
 			if (jumpTo > -1)
 			{
 				sequencer.setIndex(jumpTo);
-				samplers[jumpTo].reset(reverses[jumpTo]);
+				samplers[jumpTo].reset(reverses[jumpTo], pitch, args.sampleRate);
 				if (recording)
 				{
 					samplers[jumpTo].erase();
@@ -414,14 +415,14 @@ struct Nova : Module
 			if (recording)
 			{
 				float in = inputs[IN_INPUT].getVoltage();
-				samplers[*index].record(in);
+				samplers[*index].record(in, args.sampleRate);
 
 				outs[*index] = in;
 				mainOut = in;
 			}
 			else
 			{
-				samplers[*index].play(reverses[*index], pitch, args.sampleRate);
+				samplers[*index].play(reverses[*index]);
 
 				float envelope = 1.f;
 				// Process the ramp even when it's not being used because params might be changed over the playback of a big inBuffer
