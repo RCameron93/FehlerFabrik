@@ -1,4 +1,4 @@
-// Cut-up Sequenced Sampler
+// Cut-up Sequenced Samp
 // Ross Cameron 2021/01/18
 // Title font - Citytype Miami
 // https://www.citype.net/city/miami
@@ -245,8 +245,7 @@ struct Nova : Module
 		ENUMS(REVERSES_PARAM, 8),
 		ENUMS(TRIGGERS_PARAM, 8),
 		ATTACK_PARAM,
-		bother with them
-			RELEASE_PARAM,
+		RELEASE_PARAM,
 		PITCH_PARAM,
 		NUM_PARAMS
 	};
