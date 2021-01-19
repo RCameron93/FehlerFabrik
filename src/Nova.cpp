@@ -7,6 +7,9 @@
 
 #include "plugin.hpp"
 #include "ffCommon.hpp"
+#include <array>
+
+static const int bufferSize = 1 << 21;
 
 struct Sequencer
 {
@@ -96,81 +99,110 @@ struct Sequencer
 	}
 };
 
-struct Sampler
+struct SampleBuffer
 {
-	// Buffer that holds the original recorded sample
-	std::vector<float> inBuffer;
-	// Buffer that is sent to output, may be sample rate converted or just a copy of the input buffer
-	std::vector<float> outBuffer;
+	std::array<float, bufferSize> sampleBuff;
+	int index = 0;
+	int length = 0;
+	int capacity = bufferSize;
+	float originalSampleRate = 0.f;
+	bool full = false;
+	bool finished = false;
+	bool recording = false;
+	bool empty = true;
 
-	dsp::SampleRateConverter<1> inputSrc;
-	float originalSamplerate = 441000.f;
-
-	// Iterator used to index through the output buffer
-	int playhead = 0;
-	float output = 0.f;
-	bool finished = true;
-
-	float play(bool direction)
+	void push(float input, float sampleRate)
 	{
-		if (outBuffer.empty() || finished)
+		if (index < capacity)
 		{
-			// Reached the end of the buffer or there isn't anything there in the first place
-			output = 0.f;
-			return output;
-		}
-
-		if (!direction)
-		{
-			// Forward playback
-			if (playhead > (int)outBuffer.size() - 1)
-			{
-				// Reached the end of the buffer
-				finished = true;
-				output = 0.f;
-				return output;
-			}
-
-			// Still within the buffer, send current sample in buffer to output
-			output = outBuffer[playhead];
-			// Increment index of the buffer
-			++playhead;
-			return output;
+			empty = false;
+			sampleBuff[index] = input;
+			originalSampleRate = sampleRate;
+			++index;
+			++length;
+			return;
 		}
 		else
 		{
-			// Reverse playback
-			if (playhead < 0)
-			{
-				// Reached the start of the buffer (end of reverse playback)
-				finished = true;
-				output = 0.f;
-				return output;
-			}
-
-			// Still within the buffer, send current sample in buffer to output
-			output = outBuffer[playhead];
-			// Decrement index of buffer
-			--playhead;
-			return output;
+			full = true;
+			return;
 		}
 	}
 
-	// Called every time the sequencer begins playback from a sampler
-	void reset(bool direction, float pitch, float samplerate)
+	void resetIndex(bool reversed)
 	{
-		// Reset playback parameters
 		finished = false;
-		if (!direction)
+
+		if (!reversed)
 		{
-			// Forward - starting from the start of the buffer
-			playhead = 0;
+			index = 0;
 		}
 		else
 		{
-			// Reverse - starting from the end of the buffer
-			playhead = outBuffer.empty() ? 0 : outBuffer.size() - 1; // Is this necessary? if there's nothing in the sample vector then playhead shouldn't get used. probably best to be safe?
+			index = length - 1;
 		}
+	}
+
+	void clear()
+	{
+		sampleBuff.fill(0.f);
+		empty = true;
+		length = 0;
+	}
+
+	float play(bool reversed)
+	{
+		if (finished)
+		{
+			return 0.f;
+		}
+
+		else if (!reversed)
+		{
+			float output = sampleBuff[index];
+			++index;
+			if (index == length)
+			{
+				finished = true;
+			}
+			return output;
+		}
+
+		else
+		{
+			float output = sampleBuff[index];
+			--index;
+			if (index == -1)
+			{
+				finished = true;
+			}
+			return output;
+		}
+	}
+};
+
+struct Sampler
+{
+
+	SampleBuffer inBuffer;
+	SampleBuffer outBuffer;
+
+	dsp::SampleRateConverter<1> inputSrc;
+
+	float output = 0.f;
+	float previousPitch = 0.f;
+
+	// Clears everything from the input and output buffers
+	void clear()
+	{
+		inBuffer.clear();
+		outBuffer.clear();
+	}
+
+	void reset(bool reverse, float pitch, float sampleRate)
+	{
+		inBuffer.resetIndex(reverse);
+		outBuffer.resetIndex(reverse);
 
 		// Check for sample rate conversion
 		if (pitch == 0.f)
@@ -178,54 +210,45 @@ struct Sampler
 			// No conversion, output buffer is same as original sample
 			outBuffer = inBuffer;
 		}
-		else if (!inBuffer.empty()) // Only convert if there's something there to convert
+		else if (pitch != previousPitch)
 		{
+			previousPitch = pitch;
+
+			// Clear previous outBuffer
+			outBuffer.clear();
+
 			// Expecting the input paramter to be between -1.f and 1.f
 			// Produces a pitch/speed change from 1/4 to 4 times
 			float ratio = pow(4, -pitch);
 
 			// New sample rate we're converting to
-			float newRate = originalSamplerate * ratio;
+			float newRate = inBuffer.originalSampleRate * ratio;
 
 			// Prepare sample rate converter
-			inputSrc.setRates(originalSamplerate, newRate);
-			int inLen = inBuffer.size();
-			int outLen = inLen * ratio;
+			inputSrc.setRates(inBuffer.originalSampleRate, newRate);
+			int inLen = inBuffer.length + 1;
+			int outLen = std::min((int)(inLen * ratio), (int)bufferSize);
+			outBuffer.length = outLen;
 
-			// Make sure we've got enough space reserved to fill the output buffer with interpolated samples
-			outBuffer.reserve(outLen);
-			outBuffer.resize(outLen);
 			// Process the sample rate conversion
-			inputSrc.process((dsp::Frame<1> *)&inBuffer[0], &inLen, (dsp::Frame<1> *)&outBuffer[0], &outLen);
-			// Trim off any excess from the output buffer
-			outBuffer.shrink_to_fit();
+			inputSrc.process((dsp::Frame<1> *)&inBuffer.sampleBuff[0], &inLen, (dsp::Frame<1> *)&outBuffer.sampleBuff[0], &outLen);
 		}
 	}
 
-	void erase()
+	void record(float input, float sampleRate)
 	{
-		// Reset the buffers back to empty and free any memory we're not using
-		inBuffer.clear();
-		inBuffer.shrink_to_fit();
-		outBuffer.clear();
-		outBuffer.shrink_to_fit();
+		inBuffer.push(input, sampleRate);
 	}
 
-	void record(float in, float samplerate)
+	float play(bool reverse)
 	{
-		inBuffer.push_back(in);
-		originalSamplerate = samplerate;
+		output = outBuffer.play(reverse);
+		return output;
 	}
 
 	float playheadPercent()
 	{
-		// Returns playheads current position of sample playback as a decimal percentage
-		// Used to determine LED colour during sample playback
-		float position = (float)playhead;
-		float total = (float)inBuffer.size();
-
-		float percent = (position + 1.f) / total;
-
+		float percent = (float)outBuffer.index / (float)outBuffer.length;
 		return percent;
 	}
 };
@@ -332,7 +355,7 @@ struct Nova : Module
 			lights[SEQS_LIGHT + sequencer.index * 3].setBrightness(1);
 			lights[SEQS_LIGHT + sequencer.index * 3 + 1].setBrightness(0);
 		}
-		else if (samplers[*index].inBuffer.empty())
+		else if (samplers[*index].inBuffer.empty)
 		{
 			// No sample recorded
 			lights[SEQS_LIGHT + sequencer.index * 3].setBrightness(0);
@@ -413,7 +436,7 @@ struct Nova : Module
 		{
 			for (int i = 0; i < 8; ++i)
 			{
-				samplers[i].erase();
+				samplers[i].clear();
 			}
 		}
 
@@ -439,12 +462,12 @@ struct Nova : Module
 				// If we're recording a new sample, clear out anything from the buffer
 				if (recording)
 				{
-					samplers[*index].erase();
+					samplers[*index].clear();
 				}
 
 				// Reset the sampler playhead for this step so we can begin recording or playback
 				// This is also where we do any necessary sample rate conversion
-				samplers[*index].reset(reverses[*index], pitch, args.sampleTime);
+				samplers[*index].reset(reverses[*index], pitch, args.sampleRate);
 
 				// Reset the gain envelope
 				ramp.out = 0.f;
@@ -461,7 +484,7 @@ struct Nova : Module
 				// If we're recording a new sample, clear out anything from the buffer
 				if (recording)
 				{
-					samplers[jumpTo].erase();
+					samplers[jumpTo].clear();
 				}
 
 				// Reset the sampler playhead for this step so we can begin recording or playback
