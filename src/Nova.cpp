@@ -556,7 +556,7 @@ struct Nova : Module
 				// Get the input
 				float in = inputs[IN_INPUT].getVoltage();
 
-				// Send it to the sampler, along with the sample rate it's recorded at
+				// Send it to the sampler, along with the sample rate it's being recorded at
 				samplers[*index].record(in, args.sampleRate);
 
 				// Output whatever we're recording as we're recording it
@@ -568,7 +568,7 @@ struct Nova : Module
 				// Playback
 				samplers[*index].play(reverses[*index]);
 
-				// Process the ramp even when it's not being used because params might be changed over the playback of a big inBuffer
+				// Process the ramp even when it's not being used because params might be changed over the playback of a long recording
 				float envelope = 1.f;
 				ramp.process(0.3, attack, release, args.sampleTime, false);
 
