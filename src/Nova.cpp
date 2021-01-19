@@ -1,4 +1,4 @@
-// Cut-up Sequenced Samp
+// Cut-up Sequenced Sampler
 // Ross Cameron 2021/01/18
 // Title font - Citytype Miami
 // https://www.citype.net/city/miami
@@ -7,7 +7,6 @@
 
 #include "plugin.hpp"
 #include "ffCommon.hpp"
-#include <samplerate.h>
 
 struct Sequencer
 {
