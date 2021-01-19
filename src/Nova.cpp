@@ -99,6 +99,7 @@ struct Sequencer
 	}
 };
 
+// Data structure for storing sampled audio
 struct SampleBuffer
 {
 	std::array<float, bufferSize> sampleBuff;
@@ -106,9 +107,9 @@ struct SampleBuffer
 	int length = 0;
 	int capacity = bufferSize;
 	float originalSampleRate = 0.f;
+	float currentSampleRate = 0.f;
 	bool full = false;
 	bool finished = false;
-	bool recording = false;
 	bool empty = true;
 
 	void push(float input, float sampleRate)
@@ -148,6 +149,8 @@ struct SampleBuffer
 		sampleBuff.fill(0.f);
 		empty = true;
 		length = 0;
+		originalSampleRate = 0.f;
+		currentSampleRate = 0.f;
 	}
 
 	float play(bool reversed)
@@ -199,19 +202,62 @@ struct Sampler
 		outBuffer.clear();
 	}
 
-	void reset(bool reverse, float pitch, float sampleRate)
+	void resetIndex(bool reverse)
 	{
 		inBuffer.resetIndex(reverse);
 		outBuffer.resetIndex(reverse);
+	}
 
-		// Check for sample rate conversion
-		if (pitch == 0.f)
+	void convert(float pitch, float sampleRate)
+	{
+		// This should only (and always) be true after a recording has just been completed
+		if (outBuffer.currentSampleRate == 0.f)
 		{
-			// No conversion, output buffer is same as original sample
-			outBuffer = inBuffer;
+			// Just copy from the in buffer to the output without any conversion
+			if (pitch == 0.f)
+			{
+				// This should copy over to the output buffer
+				inBuffer.currentSampleRate = inBuffer.originalSampleRate;
+				outBuffer = inBuffer;
+				previousPitch = 0.f;
+				return;
+			}
+			else
+			{
+				previousPitch = pitch;
+
+				// Clear previous outBuffer
+				outBuffer.clear();
+
+				// Expecting the input paramter to be between -1.f and 1.f
+				// Produces a pitch/speed change from 1/4 to 4 times
+				float ratio = pow(4, -pitch);
+
+				// New sample rate we're converting to
+				float newRate = inBuffer.originalSampleRate * ratio;
+				outBuffer.currentSampleRate = newRate;
+
+				// Prepare sample rate converter
+				inputSrc.setRates(inBuffer.originalSampleRate, newRate);
+				int inLen = inBuffer.length + 1;
+				int outLen = std::min((int)(inLen * ratio), (int)bufferSize);
+				outBuffer.length = outLen;
+
+				// Process the sample rate conversion
+				inputSrc.process((dsp::Frame<1> *)&inBuffer.sampleBuff[0], &inLen, (dsp::Frame<1> *)&outBuffer.sampleBuff[0], &outLen);
+				return;
+			}
 		}
-		else if (pitch != previousPitch)
+		// Output buffer has some sample rate, and it's what the pitch control says it should be
+		else if (pitch == previousPitch)
 		{
+			// Do nothing here, outBuffer should be correct
+			return;
+		}
+		// Output buffer has some sample rate, but we have a new pitch value
+		else
+		{
+			// This should be encapsulated!
 			previousPitch = pitch;
 
 			// Clear previous outBuffer
@@ -223,6 +269,7 @@ struct Sampler
 
 			// New sample rate we're converting to
 			float newRate = inBuffer.originalSampleRate * ratio;
+			outBuffer.currentSampleRate = newRate;
 
 			// Prepare sample rate converter
 			inputSrc.setRates(inBuffer.originalSampleRate, newRate);
@@ -232,6 +279,7 @@ struct Sampler
 
 			// Process the sample rate conversion
 			inputSrc.process((dsp::Frame<1> *)&inBuffer.sampleBuff[0], &inLen, (dsp::Frame<1> *)&outBuffer.sampleBuff[0], &outLen);
+			return;
 		}
 	}
 
@@ -463,11 +511,16 @@ struct Nova : Module
 				if (recording)
 				{
 					samplers[*index].clear();
+					// Reset index so we record from the start of the buffer
+					samplers[*index].resetIndex(reverses[*index]);
 				}
-
-				// Reset the sampler playhead for this step so we can begin recording or playback
-				// This is also where we do any necessary sample rate conversion
-				samplers[*index].reset(reverses[*index], pitch, args.sampleRate);
+				else
+				{
+					// Still need to reset index to begin playback
+					// But here we also perform an necessary sample rate conversion
+					samplers[*index].resetIndex(reverses[*index]);
+					samplers[*index].convert(pitch, args.sampleRate);
+				}
 
 				// Reset the gain envelope
 				ramp.out = 0.f;
@@ -484,12 +537,17 @@ struct Nova : Module
 				// If we're recording a new sample, clear out anything from the buffer
 				if (recording)
 				{
-					samplers[jumpTo].clear();
+					samplers[*index].clear();
+					// Reset index so we record from the start of the buffer
+					samplers[*index].resetIndex(reverses[*index]);
 				}
-
-				// Reset the sampler playhead for this step so we can begin recording or playback
-				// This is also where we do any necessary sample rate conversion
-				samplers[jumpTo].reset(reverses[jumpTo], pitch, args.sampleRate);
+				else
+				{
+					// Still need to reset index to begin playback
+					// But here we also perform an necessary sample rate conversion
+					samplers[*index].resetIndex(reverses[*index]);
+					samplers[*index].convert(pitch, args.sampleRate);
+				}
 
 				// Reset the gain envelope
 				ramp.out = 0.f;
