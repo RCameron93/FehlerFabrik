@@ -205,10 +205,12 @@ struct Sampler
 	// Reset all indices ready to begin playback
 	void resetIndex(bool reverse)
 	{
+		// We reset to the end of the recorded buffer if we're about to playback in reverse
 		inBuffer.resetIndex(reverse);
 		outBuffer.resetIndex(reverse);
 	}
 
+	// Convert from original sample rate a buffer was recorded at to new one determined by the pitch control
 	void convert(float pitch, float sampleRate)
 	{
 		previousPitch = pitch;
@@ -251,19 +253,20 @@ struct Sampler
 				previousPitch = 0.f;
 				return;
 			}
+			// Copy into the outBuffer via sample rate conversion
 			else
 			{
 				convert(pitch, inBuffer.originalSampleRate);
 				return;
 			}
 		}
-		// Output buffer has some sample rate, and it's what the pitch control says it should be
+		// Output buffer has a sample rate, and it's what the pitch control says it should be
 		else if (pitch == previousPitch)
 		{
 			// Do nothing here, outBuffer should be correct
 			return;
 		}
-		// Output buffer has some sample rate, but we have a new pitch value
+		// Output buffer has a sample rate, but we have a new pitch value
 		else
 		{
 			convert(pitch, inBuffer.originalSampleRate);
@@ -273,22 +276,26 @@ struct Sampler
 
 	void prepareRecording()
 	{
+		// Clear both buffers
 		clear();
 		// We always record moving forwards through the buffer
 		resetIndex(false);
 	}
 
+	// Records a sample into the input buffer
 	void record(float input, float sampleRate)
 	{
 		inBuffer.push(input, sampleRate);
 	}
 
+	// Gets the the next sample from the output buffer
 	float play(bool reverse)
 	{
 		output = outBuffer.play(reverse);
 		return output;
 	}
 
+	// We use this value to determine the colour of the sequencer LED during playback
 	float playheadPercent()
 	{
 		float percent = (float)outBuffer.index / (float)outBuffer.length;
