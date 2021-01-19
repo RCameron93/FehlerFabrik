@@ -9,6 +9,7 @@
 #include "ffCommon.hpp"
 #include <array>
 
+// Sample buffer is 2097152 samples long - 47 seconds at 44.1KHz
 static const int bufferSize = 1 << 21;
 
 struct Sequencer
@@ -186,7 +187,6 @@ struct SampleBuffer
 
 struct Sampler
 {
-
 	SampleBuffer inBuffer;
 	SampleBuffer outBuffer;
 
@@ -202,6 +202,7 @@ struct Sampler
 		outBuffer.clear();
 	}
 
+	// Reset all indices ready to begin playback
 	void resetIndex(bool reverse)
 	{
 		inBuffer.resetIndex(reverse);
@@ -210,7 +211,35 @@ struct Sampler
 
 	void convert(float pitch, float sampleRate)
 	{
+		previousPitch = pitch;
+
+		// Clear previous outBuffer
+		outBuffer.clear();
+
+		// Expecting the input paramter to be between -1.f and 1.f
+		// Produces a pitch/speed change from 1/4 to 4 times
+		float ratio = pow(4, -pitch);
+
+		// New sample rate we're converting to
+		float newRate = inBuffer.originalSampleRate * ratio;
+		outBuffer.currentSampleRate = newRate;
+
+		// Prepare sample rate converter
+		inputSrc.setRates(inBuffer.originalSampleRate, newRate);
+		int inLen = inBuffer.length + 1;
+		int outLen = std::min((int)(inLen * ratio), (int)bufferSize);
+		outBuffer.length = outLen;
+
+		// Process the sample rate conversion
+		inputSrc.process((dsp::Frame<1> *)&inBuffer.sampleBuff[0], &inLen, (dsp::Frame<1> *)&outBuffer.sampleBuff[0], &outLen);
+	}
+
+	void preparePlayback(bool reverse, float pitch)
+	{
+		resetIndex(reverse);
+
 		// This should only (and always) be true after a recording has just been completed
+		// This is where we'll initially set previousPitch for this recording
 		if (outBuffer.currentSampleRate == 0.f)
 		{
 			// Just copy from the in buffer to the output without any conversion
@@ -224,27 +253,7 @@ struct Sampler
 			}
 			else
 			{
-				previousPitch = pitch;
-
-				// Clear previous outBuffer
-				outBuffer.clear();
-
-				// Expecting the input paramter to be between -1.f and 1.f
-				// Produces a pitch/speed change from 1/4 to 4 times
-				float ratio = pow(4, -pitch);
-
-				// New sample rate we're converting to
-				float newRate = inBuffer.originalSampleRate * ratio;
-				outBuffer.currentSampleRate = newRate;
-
-				// Prepare sample rate converter
-				inputSrc.setRates(inBuffer.originalSampleRate, newRate);
-				int inLen = inBuffer.length + 1;
-				int outLen = std::min((int)(inLen * ratio), (int)bufferSize);
-				outBuffer.length = outLen;
-
-				// Process the sample rate conversion
-				inputSrc.process((dsp::Frame<1> *)&inBuffer.sampleBuff[0], &inLen, (dsp::Frame<1> *)&outBuffer.sampleBuff[0], &outLen);
+				convert(pitch, inBuffer.originalSampleRate);
 				return;
 			}
 		}
@@ -257,30 +266,16 @@ struct Sampler
 		// Output buffer has some sample rate, but we have a new pitch value
 		else
 		{
-			// This should be encapsulated!
-			previousPitch = pitch;
-
-			// Clear previous outBuffer
-			outBuffer.clear();
-
-			// Expecting the input paramter to be between -1.f and 1.f
-			// Produces a pitch/speed change from 1/4 to 4 times
-			float ratio = pow(4, -pitch);
-
-			// New sample rate we're converting to
-			float newRate = inBuffer.originalSampleRate * ratio;
-			outBuffer.currentSampleRate = newRate;
-
-			// Prepare sample rate converter
-			inputSrc.setRates(inBuffer.originalSampleRate, newRate);
-			int inLen = inBuffer.length + 1;
-			int outLen = std::min((int)(inLen * ratio), (int)bufferSize);
-			outBuffer.length = outLen;
-
-			// Process the sample rate conversion
-			inputSrc.process((dsp::Frame<1> *)&inBuffer.sampleBuff[0], &inLen, (dsp::Frame<1> *)&outBuffer.sampleBuff[0], &outLen);
+			convert(pitch, inBuffer.originalSampleRate);
 			return;
 		}
+	}
+
+	void prepareRecording()
+	{
+		clear();
+		// We always record moving forwards through the buffer
+		resetIndex(false);
 	}
 
 	void record(float input, float sampleRate)
@@ -510,16 +505,13 @@ struct Nova : Module
 				// If we're recording a new sample, clear out anything from the buffer
 				if (recording)
 				{
-					samplers[*index].clear();
-					// Reset index so we record from the start of the buffer
-					samplers[*index].resetIndex(reverses[*index]);
+					samplers[*index].prepareRecording();
 				}
 				else
 				{
 					// Still need to reset index to begin playback
-					// But here we also perform an necessary sample rate conversion
-					samplers[*index].resetIndex(reverses[*index]);
-					samplers[*index].convert(pitch, args.sampleRate);
+					// But here we also perform any necessary sample rate conversion
+					samplers[*index].preparePlayback(reverses[*index], pitch);
 				}
 
 				// Reset the gain envelope
@@ -537,16 +529,13 @@ struct Nova : Module
 				// If we're recording a new sample, clear out anything from the buffer
 				if (recording)
 				{
-					samplers[*index].clear();
-					// Reset index so we record from the start of the buffer
-					samplers[*index].resetIndex(reverses[*index]);
+					samplers[jumpTo].prepareRecording();
 				}
 				else
 				{
 					// Still need to reset index to begin playback
 					// But here we also perform an necessary sample rate conversion
-					samplers[*index].resetIndex(reverses[*index]);
-					samplers[*index].convert(pitch, args.sampleRate);
+					samplers[jumpTo].preparePlayback(reverses[jumpTo], pitch);
 				}
 
 				// Reset the gain envelope
