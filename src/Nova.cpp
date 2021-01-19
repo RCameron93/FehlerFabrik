@@ -187,17 +187,17 @@ struct Sampler
 			// New sample rate we're converting to
 			float newRate = originalSamplerate * ratio;
 
-			// Prepare sample rate convertor
+			// Prepare sample rate converter
 			inputSrc.setRates(originalSamplerate, newRate);
 			int inLen = inBuffer.size();
 			int outLen = inLen * ratio;
 
 			// Make sure we've got enough space reserved to fill the output buffer with interpolated samples
 			outBuffer.reserve(outLen);
+			outBuffer.resize(outLen);
 			// Process the sample rate conversion
 			inputSrc.process((dsp::Frame<1> *)&inBuffer[0], &inLen, (dsp::Frame<1> *)&outBuffer[0], &outLen);
 			// Trim off any excess from the output buffer
-			outBuffer.resize(outLen);
 			outBuffer.shrink_to_fit();
 		}
 	}
