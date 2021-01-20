@@ -9,7 +9,7 @@
 #include "ffCommon.hpp"
 #include <array>
 
-// Sample buffer is 2097152 samples long - 47 seconds at 44.1KHz
+// Each sample buffer is 2097152 samples long - 47 seconds at 44.1KHz
 static const int bufferSize = 1 << 21;
 
 struct Sequencer
@@ -147,7 +147,7 @@ struct SampleBuffer
 
 	void clear()
 	{
-		sampleBuff.fill(0.f);
+		// sampleBuff.fill(0.f);
 		empty = true;
 		length = 0;
 		originalSampleRate = 0.f;
@@ -165,7 +165,7 @@ struct SampleBuffer
 		{
 			float output = sampleBuff[index];
 			++index;
-			if (index == length)
+			if (index > length - 1)
 			{
 				finished = true;
 			}
@@ -176,7 +176,7 @@ struct SampleBuffer
 		{
 			float output = sampleBuff[index];
 			--index;
-			if (index == -1)
+			if (index < 0)
 			{
 				finished = true;
 			}
