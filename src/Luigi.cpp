@@ -46,7 +46,8 @@ struct Luigi : Module
         noise = 3.f * amplitude * random::normal();
         noise = clamp(noise, -5.f, 5.f);
         dust = noise;
-        rndClock = 2.5f * amplitude * (sgn(noise) + 1.f);
+        rndClock = noise > 0 ? 10 : 0;
+        rndClock *= amplitude;
     }
 
     Luigi()
