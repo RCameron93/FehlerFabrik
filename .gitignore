@@ -6,6 +6,7 @@
 .DS_Store
 /docs/video
 /dep
+/misc
 libsamplerate-0.1.9.tar.gz
 .vscode/
 exec.sh
