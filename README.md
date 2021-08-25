@@ -48,6 +48,12 @@ Luigi is a random digital clock and noise generator. It can use either an extern
 
 Monte is a probabilistic trigger sequencer. It can use either an external or internal clock. For each step of the sequence, the probability of a trigger being generated is determined by a CV/knob combo. When CV is present the knobs act as an offset. All of the gates are OR'd to the main output as well as having their own output. Using CV on the Steps input allows for sequences of up to 32 steps.
 
+## Nova
+
+![Image of Nova](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFNova.png)
+
+Nova is a sequenced sampler that can be used to cut up loops and play back slices. Audio (or CV) is recorded at the In jack when the sequencer is active and Record mode is on. After Record has been turned off, the sample is played back cut into 8 slices, with each slice having it's own controls and output. Pitch and amplitude envelope are controlled globally.
+
 ## Planck
 
 ![Image of Planck](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFPlanck.png)
