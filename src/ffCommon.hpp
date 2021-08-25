@@ -1,4 +1,19 @@
 #include "wavetables/Wavetables.hpp"
+struct FFLogger
+{
+    int counter = 0;
+
+    // Outputs a message to the log once a second
+    void log(const char *message, float samplerate)
+    {
+        if (counter == (int)samplerate)
+        {
+            DEBUG("error: %s", message);
+            counter = 0;
+        }
+        counter++;
+    }
+};
 
 struct BitDepthReducer
 {
