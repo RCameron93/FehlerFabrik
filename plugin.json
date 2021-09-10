@@ -114,6 +114,14 @@
         "Sequencer",
         "Random"
       ]
+    },
+    {
+      "slug": "Lilt",
+      "name": "Lilt",
+      "description": "Phase-Shifted Clock Pair",
+      "tags": [
+        "Clock"
+      ]
     }
   ]
 }
