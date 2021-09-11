@@ -7,7 +7,7 @@
 
 #include "plugin.hpp"
 
-const float amplitude = 5.0f;
+const float amplitude = 10.0f;
 
 struct Lilt : Module
 {
@@ -42,15 +42,12 @@ struct Lilt : Module
 
 	void setPitch(float pitch)
 	{
-		pitch = fmin(pitch, 10.f);
 		freq = dsp::approxExp2_taylor5(pitch + 20) / 1048576;
 	}
 	void setPulseWidth(float pw)
 	{
-		const float pwMin = 0.01f;
-		this->pw = clamp(pw, pwMin, 1.f - pwMin);
+		this->pw = pw;
 	}
-
 	void setPhaseShift(float shift)
 	{
 		phaseShift = 1.f - shift;
@@ -90,6 +87,20 @@ struct Lilt : Module
 		float freqParam = params[ALPHA_RATE_PARAM].getValue();
 		float pwParam = params[WIDTH_PARAM].getValue();
 		float shiftParam = params[BETA_SHIFT_PARAM].getValue();
+
+		if (inputs[RATE_IN_INPUT].isConnected())
+		{
+			float freqCV = inputs[RATE_IN_INPUT].getVoltage();
+			freqParam = freqParam + freqCV;
+			freqParam = clamp(freqParam, -10.f, 10.f);
+		}
+
+		if (inputs[SHIFT_IN_INPUT].isConnected())
+		{
+			float shiftCV = inputs[SHIFT_IN_INPUT].getVoltage();
+			shiftParam = shiftParam + 0.1f * shiftCV;
+			shiftParam = clamp(shiftParam, 0.f, 1.f);
+		}
 
 		setPitch(freqParam);
 		setPulseWidth(pwParam);
