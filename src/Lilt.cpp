@@ -7,16 +7,7 @@
 
 #include "plugin.hpp"
 
-// struct phaseClock
-// {
-// 	float phase = 0.f;
-// 	float rate = 0.f;
-// 	float width = 0.5f;
-
-// 	void advance()
-// 	{
-// 	}
-// };
+const float amplitude = 5.0f;
 
 struct Lilt : Module
 {
@@ -47,16 +38,22 @@ struct Lilt : Module
 	float phase = 0.f;
 	float pw = 0.5f;
 	float freq = 1.f;
+	float phaseShift = 0.f;
 
 	void setPitch(float pitch)
 	{
 		pitch = fmin(pitch, 10.f);
-		freq = dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
+		freq = dsp::approxExp2_taylor5(pitch + 20) / 1048576;
 	}
 	void setPulseWidth(float pw)
 	{
 		const float pwMin = 0.01f;
-		pw = clamp(pw, pwMin, 1.f - pwMin);
+		this->pw = clamp(pw, pwMin, 1.f - pwMin);
+	}
+
+	void setPhaseShift(float shift)
+	{
+		phaseShift = 1.f - shift;
 	}
 	void osc(float dt)
 	{
@@ -67,30 +64,40 @@ struct Lilt : Module
 			phase -= 1.0f;
 		}
 	}
-	float sqr()
+	float alpha()
 	{
-		float v = (phase < pw) ? 1.0f : -1.0f;
+		float v = (phase < pw) ? 1.0f : 0.f;
+		return v;
+	}
+
+	float beta()
+	{
+		float offset = eucMod(phase + phaseShift, 1.0);
+		float v = (offset < pw) ? 1.0f : 0.f;
 		return v;
 	}
 
 	Lilt()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(ALPHA_RATE_PARAM, -8.f, 10.f, 1.f, "");
-		configParam(BETA_SHIFT_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(WIDTH_PARAM, 0.01f, 0.99f, 0.5f, "");
+		configParam(ALPHA_RATE_PARAM, -8.f, 6.f, 1.f, "Alpha Clock Rate", " BPM", 2.f, 60.f);
+		configParam(BETA_SHIFT_PARAM, 0.f, 1.f, 0.5f, "Beta Phase Shift", "˚", 0.f, 360.f);
+		configParam(WIDTH_PARAM, 0.01f, 0.99f, 0.25f, "Clock Pulse Width", "%", 0.f, 100.f);
 	}
 
 	void process(const ProcessArgs &args) override
 	{
 		float freqParam = params[ALPHA_RATE_PARAM].getValue();
 		float pwParam = params[WIDTH_PARAM].getValue();
+		float shiftParam = params[BETA_SHIFT_PARAM].getValue();
 
 		setPitch(freqParam);
 		setPulseWidth(pwParam);
+		setPhaseShift(shiftParam);
 		osc(args.sampleTime);
 
-		outputs[ALPHA_OUTPUT].setVoltage(5.f * sqr());
+		outputs[ALPHA_OUTPUT].setVoltage(amplitude * alpha());
+		outputs[BETA_OUTPUT].setVoltage(amplitude * beta());
 	}
 };
 
