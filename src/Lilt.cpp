@@ -106,15 +106,15 @@ struct LiltWidget : ModuleWidget
 		addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(56.528, 112.033)), module, Lilt::ALPHA_RATE_PARAM));
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(135.661, 169.091)), module, Lilt::BETA_SHIFT_PARAM));
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(96.094, 334.231)), module, Lilt::WIDTH_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(14.956, 29.642)), module, Lilt::ALPHA_RATE_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(35.894, 44.739)), module, Lilt::BETA_SHIFT_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(25.425, 88.432)), module, Lilt::WIDTH_PARAM));
 
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(56.528, 188.92)), module, Lilt::RATE_IN_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(135.661, 247.424)), module, Lilt::SHIFT_IN_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(14.956, 49.985)), module, Lilt::RATE_IN_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(35.894, 65.464)), module, Lilt::SHIFT_IN_INPUT));
 
-		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(56.528, 427.937)), module, Lilt::ALPHA_OUTPUT));
-		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(135.661, 427.937)), module, Lilt::BETA_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(14.956, 113.225)), module, Lilt::ALPHA_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(35.894, 113.225)), module, Lilt::BETA_OUTPUT));
 	}
 };
 
