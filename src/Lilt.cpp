@@ -78,7 +78,7 @@ struct Lilt : Module
 	Lilt()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(ALPHA_RATE_PARAM, -3.f, 6.f, 1.f, "Alpha Clock Rate", " BPM", 2.f, 60.f);
+		configParam(ALPHA_RATE_PARAM, -2.f, 4.f, 1.f, "Alpha Clock Rate", " BPM", 2.f, 60.f);
 		configParam(BETA_SHIFT_PARAM, 0.f, 1.f, 0.5f, "Beta Phase Shift", "˚", 0.f, 360.f);
 		configParam(WIDTH_PARAM, 0.01f, 0.99f, 0.25f, "Clock Pulse Width", "%", 0.f, 100.f);
 	}
