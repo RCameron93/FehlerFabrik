@@ -36,6 +36,14 @@ When recording is active, the input is sampled whenever the sequencer moves to t
 
 Fax was created with physical controllers in mind. Try mapping it's big knob to a MIDI controller, or triggering the recording of a keyboards CV output using it's gate signal.
 
+## Lilt
+
+![Image of Lilt](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFLilt.png)
+
+Lilt is a clock that generates a pair of coupled gates - a primary gate Alpha, and a phase-shifted copy Beta. Beta can have a phase relationship anywhere from 0˚ to 360˚ from Alpha. The pulsewidth of both gates can be adjusted. It has individual outputs for both gates as well as an OR'd output of both.
+
+Lilt is particularly well suited for creating shuffling swung grooves.
+
 ## Luigi
 
 ![Image of Luigi](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFLuigi.png)
