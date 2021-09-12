@@ -1,4 +1,4 @@
-// Phase-Shifted Clock Pair
+// Phase-Shifted Shuffling Clock Pair
 // Ross Cameron
 // Title font - Velvetyne Basteleur Bold
 // https://velvetyne.fr/fonts/basteleur/
@@ -26,6 +26,7 @@ struct Lilt : Module
 	};
 	enum OutputIds
 	{
+		MAIN_OUTPUT,
 		ALPHA_OUTPUT,
 		BETA_OUTPUT,
 		NUM_OUTPUTS
@@ -107,8 +108,13 @@ struct Lilt : Module
 		setPhaseShift(shiftParam);
 		osc(args.sampleTime);
 
-		outputs[ALPHA_OUTPUT].setVoltage(amplitude * alpha());
-		outputs[BETA_OUTPUT].setVoltage(amplitude * beta());
+		float alphaOut = amplitude * alpha();
+		float betaOut = amplitude * beta();
+		float mainOut = fmax(alphaOut, betaOut);
+
+		outputs[ALPHA_OUTPUT].setVoltage(alphaOut);
+		outputs[BETA_OUTPUT].setVoltage(betaOut);
+		outputs[MAIN_OUTPUT].setVoltage(mainOut);
 	}
 };
 
@@ -124,13 +130,14 @@ struct LiltWidget : ModuleWidget
 		addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(14.956, 29.642)), module, Lilt::ALPHA_RATE_PARAM));
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(35.894, 44.739)), module, Lilt::BETA_SHIFT_PARAM));
-		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(25.425, 88.432)), module, Lilt::WIDTH_PARAM));
+		addParam(createParamCentered<FF10BKnob>(mm2px(Vec(14.956, 29.642)), module, Lilt::ALPHA_RATE_PARAM));
+		addParam(createParamCentered<FF10BKnob>(mm2px(Vec(35.894, 48.903)), module, Lilt::BETA_SHIFT_PARAM));
+		addParam(createParamCentered<FF10GKnob>(mm2px(Vec(14.956, 78.918)), module, Lilt::WIDTH_PARAM));
 
 		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(14.956, 49.985)), module, Lilt::RATE_IN_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(35.894, 65.464)), module, Lilt::SHIFT_IN_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(35.894, 69.629)), module, Lilt::SHIFT_IN_INPUT));
 
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(25.425, 100.386)), module, Lilt::MAIN_OUTPUT));
 		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(14.956, 113.225)), module, Lilt::ALPHA_OUTPUT));
 		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(35.894, 113.225)), module, Lilt::BETA_OUTPUT));
 	}

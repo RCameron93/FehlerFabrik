@@ -118,7 +118,7 @@
     {
       "slug": "Lilt",
       "name": "Lilt",
-      "description": "Phase-Shifted Clock Pair",
+      "description": "Phase-Shifted Shuffling Clock Pair",
       "tags": [
         "Clock"
       ]
