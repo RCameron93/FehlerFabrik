@@ -98,7 +98,7 @@ struct Fax : Module
 	float newVolt[16] = {0.f};
 	float out[16] = {0.f};
 
-	float voltages[16][32] = {0.f};
+	float voltages[16][32] = {{0.f}};
 
 	float getRate()
 	{
