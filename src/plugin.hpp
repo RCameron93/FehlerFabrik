@@ -23,3 +23,4 @@ extern Model *modelRasoir;
 extern Model *modelChi;
 extern Model *modelNova;
 extern Model *modelLilt;
+extern Model* modelBotzinger;

@@ -122,6 +122,14 @@
       "tags": [
         "Clock"
       ]
+    },
+    {
+      "slug": "Botzinger",
+      "name": "Botzinger",
+      "description": "Arbitrary Rhythm Generator",
+      "tags": [
+        "Sequencer"
+      ]
     }
   ]
 }
