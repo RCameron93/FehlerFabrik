@@ -52,33 +52,33 @@ struct BotzingerWidget : ModuleWidget {
 		setModule(module);
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Botzinger.svg")));
 
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		for (int i = 0; i < 8; ++i)
 		{
 			float deltaX = 15.0;
 
-			addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(31.462 + (i * deltaX), 50.814)), module, Botzinger::TIME_PARAM + i));
-			addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(31.462 + (i * deltaX), 89.104)), module, Botzinger::REPEAT_PARAM + i));
-			addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(31.462 + (i * deltaX), 100.669)), module, Botzinger::WIDTH_PARAM + i));
+			addParam(createParamCentered<BefacoSlidePot>(mm2px(Vec(31.462 + (i * deltaX), 50.814)), module, Botzinger::TIME_PARAM + i));
+			addParam(createParamCentered<FF08GKnob>(mm2px(Vec(31.462 + (i * deltaX), 89.104)), module, Botzinger::REPEAT_PARAM + i));
+			addParam(createParamCentered<FF08GKnob>(mm2px(Vec(31.462 + (i * deltaX), 100.669)), module, Botzinger::WIDTH_PARAM + i));
 
-			addInput(createInputCentered<PJ301MPort>(mm2px(Vec(31.462 + (i * deltaX), 24.189)), module, Botzinger::TIME_INPUT + i));
-			addInput(createInputCentered<PJ301MPort>(mm2px(Vec(31.462 + (i * deltaX), 76.492)), module, Botzinger::REPEAT_INPUT + i));
+			addInput(createInputCentered<FF01JKPort>(mm2px(Vec(31.462 + (i * deltaX), 24.189)), module, Botzinger::TIME_INPUT + i));
+			addInput(createInputCentered<FF01JKPort>(mm2px(Vec(31.462 + (i * deltaX), 76.492)), module, Botzinger::REPEAT_INPUT + i));
 
-			addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(31.462 + (i * deltaX), 113.225)), module, Botzinger::OUTS_OUTPUT + i));
+			addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(31.462 + (i * deltaX), 113.225)), module, Botzinger::OUTS_OUTPUT + i));
 		}
 
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(167.958, 56.407)), module, Botzinger::START_PARAM));
-		addParam(createParamCentered<RoundBlackKnob>(mm2px(Vec(167.958, 76.492)), module, Botzinger::DIRECTION_PARAM));
+		addParam(createParamCentered<FFDPW>(mm2px(Vec(167.958, 56.407)), module, Botzinger::START_PARAM));
+		addParam(createParamCentered<FFDPW>(mm2px(Vec(167.958, 76.492)), module, Botzinger::DIRECTION_PARAM));
 	
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(161.638, 24.189)), module, Botzinger::CLOCK_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(155.317, 56.407)), module, Botzinger::START_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(155.317, 76.492)), module, Botzinger::DIRECTION_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(161.638, 24.189)), module, Botzinger::CLOCK_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(155.317, 56.407)), module, Botzinger::START_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(155.317, 76.492)), module, Botzinger::DIRECTION_INPUT));
 
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(155.317, 113.225)), module, Botzinger::MAIN_OUTPUT));
+		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(155.317, 113.225)), module, Botzinger::MAIN_OUTPUT));
 	}
 };
 
