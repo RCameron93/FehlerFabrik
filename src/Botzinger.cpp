@@ -1,11 +1,11 @@
 #include "plugin.hpp"
 
-
 struct Botzinger : Module {
 	enum ParamIds {
 		ENUMS(TIME_PARAM, 8),
 		ENUMS(REPEAT_PARAM, 8),
 		ENUMS(WIDTH_PARAM, 8),
+		RATE_PARAM,
 		START_PARAM,
 		DIRECTION_PARAM,
 		NUM_PARAMS
@@ -28,6 +28,14 @@ struct Botzinger : Module {
 		NUM_LIGHTS
 	};
 
+	dsp::PulseGenerator pulse;
+	dsp::Timer time;
+
+	int index = 0;
+	float multiplier = 0.f;
+	float stepLength = 0.f;
+	float onLength = 0.f;
+
 	Botzinger() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		
@@ -35,14 +43,49 @@ struct Botzinger : Module {
 		{
 			configParam(TIME_PARAM + i, 0.f, 1.f, 0.f, "");
 			configParam(REPEAT_PARAM + i, 0.f, 1.f, 0.f, "");
-			configParam(WIDTH_PARAM + i, 0.f, 1.f, 0.f, "");
+			configParam(WIDTH_PARAM + i, 0.f, 1.f, 0.5f, "");
 		}
-		
+				
+		configParam(RATE_PARAM, -3.f, 4.f, 0.f, "Global Rate Multiplier", " Seconds", 10.f);
 		configParam(START_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(DIRECTION_PARAM, 0.f, 1.f, 0.f, "");
 	}
 
+	void getParameters()
+	{
+		multiplier = params[RATE_PARAM].getValue();
+		multiplier = pow(10.f, multiplier);
+		
+		stepLength = params[TIME_PARAM + index].getValue() * multiplier;
+		onLength = params[WIDTH_PARAM + index].getValue() * stepLength;
+	}
+
+	void sequencerAdvance()
+	{
+		index = (index + 1) % 8;
+
+		time.reset();
+		pulse.reset();
+
+		getParameters();
+
+		pulse.trigger(onLength);
+	}
+
+
 	void process(const ProcessArgs& args) override {
+		getParameters();
+
+		if (time.process(args.sampleTime) > stepLength)
+		{
+			sequencerAdvance();
+		}
+
+		float out = 10.f * float(pulse.process(args.sampleTime));
+
+		outputs[OUTS_OUTPUT + index].setVoltage(out);
+		outputs[MAIN_OUTPUT].setVoltage(out);
+
 	}
 };
 
@@ -71,12 +114,13 @@ struct BotzingerWidget : ModuleWidget {
 			addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(31.462 + (i * deltaX), 113.225)), module, Botzinger::OUTS_OUTPUT + i));
 		}
 
-		addParam(createParamCentered<FFDPW>(mm2px(Vec(167.958, 56.407)), module, Botzinger::START_PARAM));
-		addParam(createParamCentered<FFDPW>(mm2px(Vec(167.958, 76.492)), module, Botzinger::DIRECTION_PARAM));
+		addParam(createParamCentered<FF15GSnapKnob>(mm2px(Vec(161.638, 50.45)), module, Botzinger::RATE_PARAM));
+		addParam(createParamCentered<FFDPW>(mm2px(Vec(167.958, 76.492)), module, Botzinger::START_PARAM));
+		addParam(createParamCentered<FFDPW>(mm2px(Vec(167.958, 97.487)), module, Botzinger::DIRECTION_PARAM));
 	
 		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(161.638, 24.189)), module, Botzinger::CLOCK_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(155.317, 56.407)), module, Botzinger::START_INPUT));
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(155.317, 76.492)), module, Botzinger::DIRECTION_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(155.317, 76.492)), module, Botzinger::START_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(155.317, 97.487)), module, Botzinger::DIRECTION_INPUT));
 
 		addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(155.317, 113.225)), module, Botzinger::MAIN_OUTPUT));
 	}
