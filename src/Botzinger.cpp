@@ -32,6 +32,11 @@ struct Botzinger : Module {
 
 	dsp::PulseGenerator pulse;
 	dsp::Timer time;
+
+	dsp::SchmittTrigger resetTrigger;
+	dsp::SchmittTrigger startTrigger;
+	dsp::SchmittTrigger directionTrigger;
+
 	Sequencer sequencer;
 
 
@@ -75,8 +80,32 @@ struct Botzinger : Module {
 		pulse.trigger(onLength);
 	}
 
+	void checkTriggers()
+	{
+		// Check for starts/stops
+		if (startTrigger.process(inputs[START_INPUT].getVoltage() + params[START_PARAM].getValue()))
+		{
+			sequencer.startStop();
+		}
+
+		// Check for direction change
+		if (directionTrigger.process(inputs[DIRECTION_INPUT].getVoltage() + params[DIRECTION_PARAM].getValue()))
+		{
+			sequencer.directionChange();
+		}
+
+		// Checl for resets
+		if (resetTrigger.process(inputs[RESET_INPUT].getVoltage()))
+		{
+			sequencer.reset();
+		}
+	}
+
 
 	void process(const ProcessArgs& args) override {
+		
+		checkTriggers();
+
 		getParameters();
 
 		if (time.process(args.sampleTime) > stepLength)
