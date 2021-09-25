@@ -27,6 +27,7 @@ struct Botzinger : Module {
 		NUM_OUTPUTS
 	};
 	enum LightIds {
+		ENUMS(STEP_LIGHT, 8),
 		NUM_LIGHTS
 	};
 
@@ -94,11 +95,26 @@ struct Botzinger : Module {
 			sequencer.directionChange();
 		}
 
-		// Checl for resets
+		// Check for resets
 		if (resetTrigger.process(inputs[RESET_INPUT].getVoltage()))
 		{
+			time.reset();
+			pulse.reset();
+
+			outputs[OUTS_OUTPUT + sequencer.index].setVoltage(0.f);
+
 			sequencer.reset();
 		}
+	}
+
+	void setLights()
+	{
+		for (int i = 0; i < 8; ++i)
+		{
+			lights[STEP_LIGHT + i].setBrightness(0.f);
+		}
+
+		lights[STEP_LIGHT + sequencer.index].setBrightness(10.f);
 	}
 
 
@@ -108,10 +124,12 @@ struct Botzinger : Module {
 
 		getParameters();
 
-		if (time.process(args.sampleTime) > stepLength)
+		if (sequencer.running && time.process(args.sampleTime) > stepLength)
 		{
 			nextStep();
 		}
+
+		setLights();
 
 		float out = 10.f * float(pulse.process(args.sampleTime));
 
@@ -136,7 +154,8 @@ struct BotzingerWidget : ModuleWidget {
 		{
 			float deltaX = 15.0;
 
-			addParam(createParamCentered<BefacoSlidePot>(mm2px(Vec(31.462 + (i * deltaX), 50.814)), module, Botzinger::TIME_PARAM + i));
+			addParam(createLightParamCentered<LEDLightSlider<RedLight>>(mm2px(Vec(31.462 + (i * deltaX), 50.814)), module, Botzinger::TIME_PARAM + i, Botzinger::STEP_LIGHT + i));
+
 			addParam(createParamCentered<FF08GKnob>(mm2px(Vec(31.462 + (i * deltaX), 89.104)), module, Botzinger::REPEAT_PARAM + i));
 			addParam(createParamCentered<FF08GKnob>(mm2px(Vec(31.462 + (i * deltaX), 100.669)), module, Botzinger::WIDTH_PARAM + i));
 
