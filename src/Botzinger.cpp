@@ -1,4 +1,5 @@
 #include "plugin.hpp"
+#include "ffCommon.hpp"
 
 struct Botzinger : Module {
 	enum ParamIds {
@@ -15,6 +16,7 @@ struct Botzinger : Module {
 		ENUMS(REPEAT_INPUT, 8),
 		ENUMS(WIDTH_INPUT, 8),
 		CLOCK_INPUT,
+		RESET_INPUT,
 		START_INPUT,
 		DIRECTION_INPUT,
 		NUM_INPUTS
@@ -30,8 +32,9 @@ struct Botzinger : Module {
 
 	dsp::PulseGenerator pulse;
 	dsp::Timer time;
+	Sequencer sequencer;
 
-	int index = 0;
+
 	float multiplier = 0.f;
 	float stepLength = 0.f;
 	float onLength = 0.f;
@@ -56,13 +59,13 @@ struct Botzinger : Module {
 		multiplier = params[RATE_PARAM].getValue();
 		multiplier = pow(10.f, multiplier);
 		
-		stepLength = params[TIME_PARAM + index].getValue() * multiplier;
-		onLength = params[WIDTH_PARAM + index].getValue() * stepLength;
+		stepLength = params[TIME_PARAM + sequencer.index].getValue() * multiplier;
+		onLength = params[WIDTH_PARAM + sequencer.index].getValue() * stepLength;
 	}
 
-	void sequencerAdvance()
+	void nextStep()
 	{
-		index = (index + 1) % 8;
+		sequencer.advanceIndex();
 
 		time.reset();
 		pulse.reset();
@@ -78,12 +81,12 @@ struct Botzinger : Module {
 
 		if (time.process(args.sampleTime) > stepLength)
 		{
-			sequencerAdvance();
+			nextStep();
 		}
 
 		float out = 10.f * float(pulse.process(args.sampleTime));
 
-		outputs[OUTS_OUTPUT + index].setVoltage(out);
+		outputs[OUTS_OUTPUT + sequencer.index].setVoltage(out);
 		outputs[MAIN_OUTPUT].setVoltage(out);
 
 	}
@@ -118,7 +121,8 @@ struct BotzingerWidget : ModuleWidget {
 		addParam(createParamCentered<FFDPW>(mm2px(Vec(167.958, 76.492)), module, Botzinger::START_PARAM));
 		addParam(createParamCentered<FFDPW>(mm2px(Vec(167.958, 97.487)), module, Botzinger::DIRECTION_PARAM));
 	
-		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(161.638, 24.189)), module, Botzinger::CLOCK_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(155.317, 24.189)), module, Botzinger::CLOCK_INPUT));
+		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(167.958, 24.189)), module, Botzinger::RESET_INPUT));
 		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(155.317, 76.492)), module, Botzinger::START_INPUT));
 		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(155.317, 97.487)), module, Botzinger::DIRECTION_INPUT));
 
