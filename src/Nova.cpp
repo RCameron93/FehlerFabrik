@@ -12,93 +12,93 @@
 // Each sample buffer is 2097152 samples long - 47 seconds at 44.1KHz
 static const int bufferSize = 1 << 21;
 
-struct Sequencer
-{
-	bool running = false;
-	// 0 = fwd, 1 = rev, 2 = bounce, 3 = rnd
-	int direction = 0;
-	// Just used in bounce mode
-	int bounceDir = 0;
+// struct Sequencer
+// {
+// 	bool running = false;
+// 	// 0 = fwd, 1 = rev, 2 = bounce, 3 = rnd
+// 	int direction = 0;
+// 	// Just used in bounce mode
+// 	int bounceDir = 0;
 
-	int index = 0; // Sequencer index
+// 	int index = 0; // Sequencer index
 
-	void reset()
-	{
-		index = 0;
-	}
+// 	void reset()
+// 	{
+// 		index = 0;
+// 	}
 
-	void setIndex(int step)
-	{
-		if (step < 8 && step > -1)
-		{
-			index = step;
-		}
-	}
+// 	void setIndex(int step)
+// 	{
+// 		if (step < 8 && step > -1)
+// 		{
+// 			index = step;
+// 		}
+// 	}
 
-	void startStop()
-	{
-		running = !running;
-	}
+// 	void startStop()
+// 	{
+// 		running = !running;
+// 	}
 
-	void directionChange()
-	{
-		// Cycle through direction modes
-		++direction;
-		direction %= 4;
-	}
+// 	void directionChange()
+// 	{
+// 		// Cycle through direction modes
+// 		++direction;
+// 		direction %= 4;
+// 	}
 
-	void advanceIndex()
-	{
-		switch (direction)
-		{
-		case 0:
-			// Forward
-			++index;
-			index %= 8;
-			break;
+// 	void advanceIndex()
+// 	{
+// 		switch (direction)
+// 		{
+// 		case 0:
+// 			// Forward
+// 			++index;
+// 			index %= 8;
+// 			break;
 
-		case 1:
-			// Reverse
-			--index;
-			index = (index % 8 + 8) % 8;
-			break;
+// 		case 1:
+// 			// Reverse
+// 			--index;
+// 			index = (index % 8 + 8) % 8;
+// 			break;
 
-		case 2:
-			// Bouncing (plays each end twice so as to be a factor of four)
-			if (bounceDir)
-			{
-				++index;
-				if (index == 8)
-				{
-					bounceDir = !bounceDir;
-					index = 7;
-				}
-			}
-			else
-			{
-				--index;
-				if (index == -1)
-				{
-					bounceDir = !bounceDir;
-					index = 0;
-				}
-			}
+// 		case 2:
+// 			// Bouncing (plays each end twice so as to be a factor of four)
+// 			if (bounceDir)
+// 			{
+// 				++index;
+// 				if (index == 8)
+// 				{
+// 					bounceDir = !bounceDir;
+// 					index = 7;
+// 				}
+// 			}
+// 			else
+// 			{
+// 				--index;
+// 				if (index == -1)
+// 				{
+// 					bounceDir = !bounceDir;
+// 					index = 0;
+// 				}
+// 			}
 
-			break;
+// 			break;
 
-		case 3:
-			// Random
-			{
-				float rng = 7 * random::uniform();
-				index = (int)round(rng);
-			}
-			break;
+// 		case 3:
+// 			// Random
+// 			{
+// 				float rng = 7 * random::uniform();
+// 				index = (int)round(rng);
+// 			}
+// 			break;
 
-		default:
-			break;
-		}
-	}
-};
+// 		default:
+// 			break;
+// 		}
+// 	}
+// };
 
 // Data structure for storing sampled audio
 struct SampleBuffer

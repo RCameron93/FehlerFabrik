@@ -207,3 +207,105 @@ struct Operator
         feedbackSample = (bufferSample1 + bufferSample2) / 2.f;
     }
 };
+
+struct Sequencer
+{
+	bool running = false;
+	// 0 = fwd, 1 = rev, 2 = bounce, 3 = rnd
+	int direction = 0;
+	// Just used in bounce mode
+	int bounceDir = 0;
+
+    int length = 8; // Amount of steps
+	int index = 0; // Sequencer index
+
+	void reset()
+	{
+		index = 0;
+	}
+
+    void setLength(int newLength)
+    {
+        if (newLength > 0)
+        {
+            length = newLength;
+            
+            if (index > (length - 1))
+            {
+                reset();
+            }
+        }
+    }
+
+	void setIndex(int step)
+	{
+		if (step < length && step > -1)
+		{
+			index = step;
+		}
+	}
+
+	void startStop()
+	{
+		running = !running;
+	}
+
+	void directionChange()
+	{
+		// Cycle through direction modes
+		++direction;
+		direction %= 4;
+	}
+
+	void advanceIndex()
+	{
+		switch (direction)
+		{
+		case 0:
+			// Forward
+			++index;
+			index %= length;
+			break;
+
+		case 1:
+			// Reverse
+			--index;
+			index = (index % length + length) % length;
+			break;
+
+		case 2:
+			// Bouncing (plays each end twice so as to be a factor of four)
+			if (bounceDir)
+			{
+				++index;
+				if (index == length)
+				{
+					bounceDir = !bounceDir;
+					index = length - 1;
+				}
+			}
+			else
+			{
+				--index;
+				if (index == -1)
+				{
+					bounceDir = !bounceDir;
+					index = 0;
+				}
+			}
+
+			break;
+
+		case 3:
+			// Random
+			{
+				float rng = (length - 1) * random::uniform();
+				index = (int)round(rng);
+			}
+			break;
+
+		default:
+			break;
+		}
+	}
+};
