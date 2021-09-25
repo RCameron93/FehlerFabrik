@@ -1,3 +1,10 @@
+// Arbitrary Rhythm Generator
+// Ross Cameron 2021/09/25
+// Title font - Moche Regular
+// https://www.pepite.world/fonderie/moche/
+// Main font - Jost
+// https://indestructibletype.com/Jost.html
+
 #include "plugin.hpp"
 #include "ffCommon.hpp"
 
@@ -50,35 +57,52 @@ struct Botzinger : Module {
 		
 		for (int i = 0; i < 8; ++i)
 		{
-			configParam(TIME_PARAM + i, 0.f, 1.f, 0.f, "");
+			configParam(TIME_PARAM + i, 0.f, 1.f, 0.f, "Step Time", "%", 0.f, 100.f);
 			configParam(REPEAT_PARAM + i, 0.f, 1.f, 0.f, "");
-			configParam(WIDTH_PARAM + i, 0.f, 1.f, 0.5f, "");
+			configParam(WIDTH_PARAM + i, 0.f, 1.f, 0.5f, "Gate Width", "%", 0.f, 100.f);
 		}
 				
-		configParam(RATE_PARAM, -3.f, 4.f, 0.f, "Global Rate Multiplier", " Seconds", 10.f);
-		configParam(START_PARAM, 0.f, 1.f, 0.f, "");
-		configParam(DIRECTION_PARAM, 0.f, 1.f, 0.f, "");
+		configParam(RATE_PARAM, -2.f, 4.f, 1.f, "Global Rate Multiplier", " Seconds", 10.f);
+		configParam(START_PARAM, 0.f, 1.f, 0.f, "Start/Stop");
+		configParam(DIRECTION_PARAM, 0.f, 1.f, 0.f, "Sequencer Direction");
+
+		sequencer.running = true;
 	}
 
 	void getParameters()
 	{
+		// Expect the multiplier param to return a value 0<x<1
 		multiplier = params[RATE_PARAM].getValue();
+		// Convert to a decade scale - 10^x seconds
 		multiplier = pow(10.f, multiplier);
 		
+		// stepLength is a percentage of the global rate multiplier
 		stepLength = params[TIME_PARAM + sequencer.index].getValue() * multiplier;
+		// onLength is a percentage of stepLength
 		onLength = params[WIDTH_PARAM + sequencer.index].getValue() * stepLength;
 	}
 
 	void nextStep()
 	{
+		// Remove any voltage from the current output
+		// This seems to be necessary to clear the individual gate outputs
+		outputs[OUTS_OUTPUT + sequencer.index].setVoltage(0.f);
+		// Set the current sequencer index light to off
+		lights[STEP_LIGHT + sequencer.index].setBrightness(0.f);
+
+		// Move the internal sequener to the next step
 		sequencer.advanceIndex();
 
+		// Restart both timers
 		time.reset();
 		pulse.reset();
 
-		getParameters();
-
+		// Start a new pulse timer
+		// The length of which is determined by onLength
 		pulse.trigger(onLength);
+
+		// Set the new sequencer index light to on
+		lights[STEP_LIGHT + sequencer.index].setBrightness(10.f);
 	}
 
 	void checkTriggers()
@@ -98,25 +122,16 @@ struct Botzinger : Module {
 		// Check for resets
 		if (resetTrigger.process(inputs[RESET_INPUT].getVoltage()))
 		{
+			// Clear both timers
 			time.reset();
 			pulse.reset();
 
+			// Clear the output port of the current step of any voltage
 			outputs[OUTS_OUTPUT + sequencer.index].setVoltage(0.f);
 
 			sequencer.reset();
 		}
 	}
-
-	void setLights()
-	{
-		for (int i = 0; i < 8; ++i)
-		{
-			lights[STEP_LIGHT + i].setBrightness(0.f);
-		}
-
-		lights[STEP_LIGHT + sequencer.index].setBrightness(10.f);
-	}
-
 
 	void process(const ProcessArgs& args) override {
 		
@@ -124,12 +139,11 @@ struct Botzinger : Module {
 
 		getParameters();
 
+		// We only advance the step timer if the sequencer is running
 		if (sequencer.running && time.process(args.sampleTime) > stepLength)
 		{
 			nextStep();
 		}
-
-		setLights();
 
 		float out = 10.f * float(pulse.process(args.sampleTime));
 
