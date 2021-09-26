@@ -37,22 +37,28 @@ struct Botzinger : Module {
 		ENUMS(STEP_LIGHT, 8),
 		NUM_LIGHTS
 	};
-
-	dsp::PulseGenerator pulse;
-	dsp::Timer time;
-
+	// All the triggers that may be input
 	dsp::SchmittTrigger resetTrigger;
 	dsp::SchmittTrigger startTrigger;
 	dsp::SchmittTrigger directionTrigger;
 	dsp::SchmittTrigger clockTrigger;
 
-	Sequencer sequencer;
+	// Timers for the free running pulse generator
+	dsp::PulseGenerator pulse;
+	dsp::Timer stepTime;
+	dsp::Timer beatTime;
+
+	// Counters for the clocked pulse generator
+	int stepClockCount = 0;
+	int beatClockCount = 0;
 
 	bool clocked = false;
-	int clockCount = 0;
-
-	float multiplier = 0.f;
+	Sequencer sequencer;
+	
+	// How long each step/beat/on pulse is, as a fraction of the global rate
+	float globalRate = 0.f;
 	float stepLength = 0.f;
+	float beatLength = 0.f;
 	float onLength = 0.f;
 
 	int repeats = 1;
@@ -63,7 +69,7 @@ struct Botzinger : Module {
 		for (int i = 0; i < 8; ++i)
 		{
 			configParam(TIME_PARAM + i, 0.f, 1.f, 0.f, "Step Time", "%", 0.f, 100.f);
-			configParam(REPEAT_PARAM + i, 0.f, 1.f, 0.f, "");
+			configParam(REPEAT_PARAM + i, 1.f, 32.f, 1.f, "");
 			configParam(WIDTH_PARAM + i, 0.f, 1.f, 0.5f, "Gate Width", "%", 0.f, 100.f);
 		}
 				
@@ -76,34 +82,40 @@ struct Botzinger : Module {
 
 	void resetTimers()
 	{
-		time.reset();
+		stepTime.reset();
+		beatTime.reset();
 		pulse.reset();
 	}
 
 	void getParameters()
 	{
-		// Expect the multiplier param to return a value 0<x<1
-		multiplier = params[RATE_PARAM].getValue();
+		// Expect the globalRate param to return a value 0<x<1
+		globalRate = params[RATE_PARAM].getValue();
 		// Convert to a decade scale - 10^x seconds
-		multiplier = pow(10.f, multiplier);
+		globalRate = pow(10.f, globalRate);
 		
-		// stepLength is a percentage of the global rate multiplier
-		stepLength = params[TIME_PARAM + sequencer.index].getValue()
+		// stepLength is a percentage of the global rate
+		stepLength = params[TIME_PARAM + sequencer.index].getValue();
 		if (inputs[TIME_INPUT + sequencer.index].isConnected())
 		{
 			stepLength += inputs[TIME_INPUT + sequencer.index].getVoltage() * 0.1f;
 			stepLength = clamp(stepLength, 0.f, 1.f);
 		}
-		stepLength *= multiplier;
-		
-		// onLength is a percentage of stepLength
+		stepLength *= globalRate;
+
+		// beatLength is essentially how long a beat is if it is repeated n times in a step
+		repeats = params[REPEAT_PARAM + sequencer.index].getValue();
+		beatLength = stepLength / repeats;
+
+		// onLength is a percentage of beatLength, basically pulsewidth
 		onLength = params[WIDTH_PARAM + sequencer.index].getValue();
 		if (inputs[WIDTH_INPUT + sequencer.index].isConnected())
 		{
 			onLength += inputs[WIDTH_INPUT + sequencer.index].getVoltage() * 0.1f;
 			onLength = clamp(onLength, 0.f, 1.f);
 		}
-		onLength *= stepLength;
+		onLength *= beatLength;
+
 	}
 
 	void nextStep()
@@ -119,12 +131,40 @@ struct Botzinger : Module {
 
 		if (clocked)
 		{
-			clockCount = 0;
+			beatClockCount = 0;
+			stepClockCount = 0;
 		}
 		else
 		{
-			// Restart both timers
+			// Restart all timers
 			resetTimers();
+
+			// Start a new pulse timer
+			// The length of which is determined by onLength
+			pulse.trigger(onLength);
+		}
+
+		// Set the new sequencer index light to on
+		lights[STEP_LIGHT + sequencer.index].setBrightness(10.f);
+	}
+
+	void nextBeat()
+	{
+		// Remove any voltage from the current output
+		// This seems to be necessary to clear the individual gate outputs
+		outputs[OUTS_OUTPUT + sequencer.index].setVoltage(0.f);
+		// Set the current sequencer index light to off
+		lights[STEP_LIGHT + sequencer.index].setBrightness(0.f);
+
+		if (clocked)
+		{
+			beatClockCount = 0;
+		}
+		else
+		{
+			// Restart beat and on timers
+			beatTime.reset();
+			pulse.reset();
 
 			// Start a new pulse timer
 			// The length of which is determined by onLength
@@ -155,7 +195,8 @@ struct Botzinger : Module {
 			// Clear both timers
 			resetTimers();
 
-			clockCount = 0;
+			stepClockCount = 0;
+			beatClockCount = 0;
 
 			// Clear the output port of the current step of any voltage
 			outputs[OUTS_OUTPUT + sequencer.index].setVoltage(0.f);
@@ -175,7 +216,8 @@ struct Botzinger : Module {
 			// We've just changed clock modes
 			// Reset stuff
 			resetTimers();
-			clockCount = 0;
+			stepClockCount = 0;
+			beatClockCount = 0;
 		}
 	}
 
@@ -195,29 +237,42 @@ struct Botzinger : Module {
 				// Run sequencer clocked
 				// Round off parameter values to a round number?
 				stepLength = round(stepLength);
+				beatLength = round(beatLength);
 				onLength = round(onLength);
 
 				// Count how many clock pulses have arrived since we started this step
 				if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage()))
 				{
-					++clockCount;
+					++stepClockCount;
+					++beatClockCount;
 				}
 
-				if (clockCount <= onLength)
+				if (beatClockCount <= onLength)
 				{
 					out = 10.f;
 				}
-				if (clockCount > stepLength)
+				if (beatClockCount > beatLength)
+				{
+					nextBeat();
+				}
+				if (stepClockCount > stepLength)
 				{
 					nextStep();
 				}
 			}
 			else
 			{ 
-				if (time.process(args.sampleTime) > stepLength)
+
+				if (beatTime.process(args.sampleTime) > beatLength)
+				{
+					nextBeat();
+				}
+				if (stepTime.process(args.sampleTime) > stepLength)
 				{
 					nextStep();
 				}
+				
+
 
 				out = 10.f * float(pulse.process(args.sampleTime));
 			}
@@ -246,7 +301,7 @@ struct BotzingerWidget : ModuleWidget {
 
 			addParam(createLightParamCentered<LEDLightSlider<RedLight>>(mm2px(Vec(31.462 + (i * deltaX), 50.814)), module, Botzinger::TIME_PARAM + i, Botzinger::STEP_LIGHT + i));
 
-			addParam(createParamCentered<FF08GKnob>(mm2px(Vec(31.462 + (i * deltaX), 89.104)), module, Botzinger::REPEAT_PARAM + i));
+			addParam(createParamCentered<FF08GSnapKnob>(mm2px(Vec(31.462 + (i * deltaX), 89.104)), module, Botzinger::REPEAT_PARAM + i));
 			addParam(createParamCentered<FF08GKnob>(mm2px(Vec(31.462 + (i * deltaX), 100.669)), module, Botzinger::WIDTH_PARAM + i));
 
 			addInput(createInputCentered<FF01JKPort>(mm2px(Vec(31.462 + (i * deltaX), 24.189)), module, Botzinger::TIME_INPUT + i));
