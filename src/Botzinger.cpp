@@ -55,6 +55,8 @@ struct Botzinger : Module {
 	float stepLength = 0.f;
 	float onLength = 0.f;
 
+	int repeats = 1;
+
 	Botzinger() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		
@@ -86,9 +88,22 @@ struct Botzinger : Module {
 		multiplier = pow(10.f, multiplier);
 		
 		// stepLength is a percentage of the global rate multiplier
-		stepLength = params[TIME_PARAM + sequencer.index].getValue() * multiplier;
+		stepLength = params[TIME_PARAM + sequencer.index].getValue()
+		if (inputs[TIME_INPUT + sequencer.index].isConnected())
+		{
+			stepLength += inputs[TIME_INPUT + sequencer.index].getVoltage() * 0.1f;
+			stepLength = clamp(stepLength, 0.f, 1.f);
+		}
+		stepLength *= multiplier;
+		
 		// onLength is a percentage of stepLength
-		onLength = params[WIDTH_PARAM + sequencer.index].getValue() * stepLength;
+		onLength = params[WIDTH_PARAM + sequencer.index].getValue();
+		if (inputs[WIDTH_INPUT + sequencer.index].isConnected())
+		{
+			onLength += inputs[WIDTH_INPUT + sequencer.index].getVoltage() * 0.1f;
+			onLength = clamp(onLength, 0.f, 1.f);
+		}
+		onLength *= stepLength;
 	}
 
 	void nextStep()
