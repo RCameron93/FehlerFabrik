@@ -188,17 +188,15 @@ struct Botzinger : Module {
 					++clockCount;
 				}
 
+				if (clockCount <= onLength)
+				{
+					out = 10.f;
+				}
 				if (clockCount > stepLength)
 				{
 					nextStep();
 				}
-				if (clockCount < onLength)
-				{
-					out = 10.f;
-				}
 			}
-
-			// We only advance the step timer if the sequencer is running
 			else
 			{ 
 				if (time.process(args.sampleTime) > stepLength)
