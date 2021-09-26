@@ -44,9 +44,12 @@ struct Botzinger : Module {
 	dsp::SchmittTrigger resetTrigger;
 	dsp::SchmittTrigger startTrigger;
 	dsp::SchmittTrigger directionTrigger;
+	dsp::SchmittTrigger clockTrigger;
 
 	Sequencer sequencer;
 
+	bool clocked = false;
+	int clockCount = 0;
 
 	float multiplier = 0.f;
 	float stepLength = 0.f;
@@ -67,6 +70,12 @@ struct Botzinger : Module {
 		configParam(DIRECTION_PARAM, 0.f, 1.f, 0.f, "Sequencer Direction");
 
 		sequencer.running = true;
+	}
+
+	void resetTimers()
+	{
+		time.reset();
+		pulse.reset();
 	}
 
 	void getParameters()
@@ -93,13 +102,19 @@ struct Botzinger : Module {
 		// Move the internal sequener to the next step
 		sequencer.advanceIndex();
 
-		// Restart both timers
-		time.reset();
-		pulse.reset();
+		if (clocked)
+		{
+			clockCount = 0;
+		}
+		else
+		{
+			// Restart both timers
+			resetTimers();
 
-		// Start a new pulse timer
-		// The length of which is determined by onLength
-		pulse.trigger(onLength);
+			// Start a new pulse timer
+			// The length of which is determined by onLength
+			pulse.trigger(onLength);
+		}
 
 		// Set the new sequencer index light to on
 		lights[STEP_LIGHT + sequencer.index].setBrightness(10.f);
@@ -123,8 +138,9 @@ struct Botzinger : Module {
 		if (resetTrigger.process(inputs[RESET_INPUT].getVoltage()))
 		{
 			// Clear both timers
-			time.reset();
-			pulse.reset();
+			resetTimers();
+
+			clockCount = 0;
 
 			// Clear the output port of the current step of any voltage
 			outputs[OUTS_OUTPUT + sequencer.index].setVoltage(0.f);
@@ -133,19 +149,66 @@ struct Botzinger : Module {
 		}
 	}
 
+	void getClockMode()
+	{
+		bool previousState = clocked;
+
+		clocked = inputs[CLOCK_INPUT].isConnected();
+
+		if (clocked != previousState)
+		{
+			// We've just changed clock modes
+			// Reset stuff
+			resetTimers();
+			clockCount = 0;
+		}
+	}
+
 	void process(const ProcessArgs& args) override {
+		float out = 0.f;
 		
+		getClockMode();
+
 		checkTriggers();
 
 		getParameters();
 
-		// We only advance the step timer if the sequencer is running
-		if (sequencer.running && time.process(args.sampleTime) > stepLength)
+		if (sequencer.running)
 		{
-			nextStep();
-		}
+			if (clocked)
+			{
+				// Run sequencer clocked
+				// Round off parameter values to a round number?
+				stepLength = round(stepLength);
+				onLength = round(onLength);
 
-		float out = 10.f * float(pulse.process(args.sampleTime));
+				// Count how many clock pulses have arrived since we started this step
+				if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage()))
+				{
+					++clockCount;
+				}
+
+				if (clockCount > stepLength)
+				{
+					nextStep();
+				}
+				if (clockCount < onLength)
+				{
+					out = 10.f;
+				}
+			}
+
+			// We only advance the step timer if the sequencer is running
+			else
+			{ 
+				if (time.process(args.sampleTime) > stepLength)
+				{
+					nextStep();
+				}
+
+				out = 10.f * float(pulse.process(args.sampleTime));
+			}
+		}
 
 		outputs[OUTS_OUTPUT + sequencer.index].setVoltage(out);
 		outputs[MAIN_OUTPUT].setVoltage(out);
