@@ -4,7 +4,9 @@
 
 Plugin modules for [VCV Rack](http://vcvrack.com)
 
-These are all still a work in progress!
+All of these modules have been written by me as a novices exercise in C++. Functionality is liable to change at any time as bugs are found, or if I change my mind about what I want these modules to do!
+
+Further documentation is forthcoming, pending the arrival of that mythical phenomenon known as "free time"...
 
 ## Arpanet
 
