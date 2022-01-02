@@ -18,6 +18,16 @@ Arpanet is an attempt to recreate the ARP Instruments 1601 step sequencer. Readi
 
 Aspect is a basic clock divider and sequential gate sequencer. The left set of outputs are divisions of the input clock, and the right set are the sequence output. Gate highs are 10V, lows are 0v.
 
+## Botzinger
+
+![Image of Botzinger](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFBotzinger.png)
+
+Botzinger is an arbitrary length step-sequencer. When unclocked, each of the sliders controls the step time as a percentage of the global rate control, which can range from 0.01 to 10000 seconds. When each step begins, Botzinger will start to output a gate signal on both the main output and the current individual output. The amount of gates generated per step, and the length of the gates, are determined by the repeat and width controls. 
+
+When clocked, the sliders determine how after many clock pulses the sequencer moves to the next step. Repeat and width controls behave similarly to in unclocked mode. In this mode the global rate control has a minimum setting of 1, as the module can only act as a clock divider, not a multiplier.
+
+The modules sequencer can be controlled by the start/stop, reset, and direction controls.
+
 ## Chi
 
 ![Image of Chi](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFChi.png)
@@ -59,6 +69,7 @@ Monte is a probabilistic trigger sequencer. It can use either an external or int
 ## Nova
 
 ![Image of Nova](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFNova.png)
+
 
 Nova is a sequenced sampler that can be used to cut up loops and play back slices. Audio (or CV) is recorded at the In jack when the sequencer is active and Record mode is on. After Record has been turned off, the sample is played back cut into 8 slices, with each slice having it's own controls and output. Pitch and amplitude envelope are controlled globally.
 
