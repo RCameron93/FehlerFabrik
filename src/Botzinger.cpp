@@ -8,8 +8,10 @@
 #include "plugin.hpp"
 #include "ffCommon.hpp"
 
-struct Botzinger : Module {
-	enum ParamIds {
+struct Botzinger : Module
+{
+	enum ParamIds
+	{
 		ENUMS(TIME_PARAM, 8),
 		ENUMS(REPEAT_PARAM, 8),
 		ENUMS(WIDTH_PARAM, 8),
@@ -18,7 +20,8 @@ struct Botzinger : Module {
 		DIRECTION_PARAM,
 		NUM_PARAMS
 	};
-	enum InputIds {
+	enum InputIds
+	{
 		ENUMS(TIME_INPUT, 8),
 		ENUMS(REPEAT_INPUT, 8),
 		ENUMS(WIDTH_INPUT, 8),
@@ -28,12 +31,14 @@ struct Botzinger : Module {
 		DIRECTION_INPUT,
 		NUM_INPUTS
 	};
-	enum OutputIds {
+	enum OutputIds
+	{
 		ENUMS(OUTS_OUTPUT, 8),
 		MAIN_OUTPUT,
 		NUM_OUTPUTS
 	};
-	enum LightIds {
+	enum LightIds
+	{
 		ENUMS(STEP_LIGHT, 8),
 		NUM_LIGHTS
 	};
@@ -54,26 +59,27 @@ struct Botzinger : Module {
 
 	bool clocked = false;
 	Sequencer sequencer;
-	
+
 	// How long each step/beat/on pulse is, as a fraction of the global rate
 	float globalRate = 0.f;
 	float stepLength = 0.f;
 	float beatLength = 0.f;
-	float onLength = 0.f;
+	float pulseWidth = 0.f;
 
 	int repeats = 1;
 
-	Botzinger() {
+	Botzinger()
+	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		
+
 		for (int i = 0; i < 8; ++i)
 		{
-			configParam(TIME_PARAM + i, 0.f, 1.f, 0.f, "Step Time", "%", 0.f, 100.f);
+			configParam(TIME_PARAM + i, 0.f, 1.f, .4f, "Step Time", "%", 0.f, 100.f);
 			configParam(REPEAT_PARAM + i, 1.f, 32.f, 1.f, "");
-			configParam(WIDTH_PARAM + i, 0.f, 1.f, 0.5f, "Gate Width", "%", 0.f, 100.f);
+			configParam(WIDTH_PARAM + i, 0.f, 1.f, 0.25, "Gate Width", "%", 0.f, 100.f);
 		}
-				
-		configParam(RATE_PARAM, -2.f, 4.f, 1.f, "Global Rate Multiplier", " Seconds", 10.f);
+
+		configParam(RATE_PARAM, -2.f, 4.f, 0.f, "Global Rate Multiplier", "", 10.f);
 		configParam(START_PARAM, 0.f, 1.f, 0.f, "Start/Stop");
 		configParam(DIRECTION_PARAM, 0.f, 1.f, 0.f, "Sequencer Direction");
 
@@ -87,13 +93,13 @@ struct Botzinger : Module {
 		pulse.reset();
 	}
 
-	void getParameters()
+	void getFreeRunParameters()
 	{
-		// Expect the globalRate param to return a value 0<x<1
+		// Expect the globalRate param to return a value -2<x<4
 		globalRate = params[RATE_PARAM].getValue();
 		// Convert to a decade scale - 10^x seconds
 		globalRate = pow(10.f, globalRate);
-		
+
 		// stepLength is a percentage of the global rate
 		stepLength = params[TIME_PARAM + sequencer.index].getValue();
 		if (inputs[TIME_INPUT + sequencer.index].isConnected())
@@ -107,15 +113,14 @@ struct Botzinger : Module {
 		repeats = params[REPEAT_PARAM + sequencer.index].getValue();
 		beatLength = stepLength / repeats;
 
-		// onLength is a percentage of beatLength, basically pulsewidth
-		onLength = params[WIDTH_PARAM + sequencer.index].getValue();
+		// pulseWidth is a percentage of beatLength, basically pulsewidth
+		pulseWidth = params[WIDTH_PARAM + sequencer.index].getValue();
 		if (inputs[WIDTH_INPUT + sequencer.index].isConnected())
 		{
-			onLength += inputs[WIDTH_INPUT + sequencer.index].getVoltage() * 0.1f;
-			onLength = clamp(onLength, 0.f, 1.f);
+			pulseWidth += inputs[WIDTH_INPUT + sequencer.index].getVoltage() * 0.1f;
+			pulseWidth = clamp(pulseWidth, 0.f, 1.f);
 		}
-		onLength *= beatLength;
-
+		pulseWidth *= beatLength;
 	}
 
 	void nextStep()
@@ -140,8 +145,8 @@ struct Botzinger : Module {
 			resetTimers();
 
 			// Start a new pulse timer
-			// The length of which is determined by onLength
-			pulse.trigger(onLength);
+			// The length of which is determined by pulseWidth
+			pulse.trigger(pulseWidth);
 		}
 
 		// Set the new sequencer index light to on
@@ -153,8 +158,6 @@ struct Botzinger : Module {
 		// Remove any voltage from the current output
 		// This seems to be necessary to clear the individual gate outputs
 		outputs[OUTS_OUTPUT + sequencer.index].setVoltage(0.f);
-		// Set the current sequencer index light to off
-		lights[STEP_LIGHT + sequencer.index].setBrightness(0.f);
 
 		if (clocked)
 		{
@@ -167,12 +170,9 @@ struct Botzinger : Module {
 			pulse.reset();
 
 			// Start a new pulse timer
-			// The length of which is determined by onLength
-			pulse.trigger(onLength);
+			// The length of which is determined by pulseWidth
+			pulse.trigger(pulseWidth);
 		}
-
-		// Set the new sequencer index light to on
-		lights[STEP_LIGHT + sequencer.index].setBrightness(10.f);
 	}
 
 	void checkTriggers()
@@ -200,6 +200,8 @@ struct Botzinger : Module {
 
 			// Clear the output port of the current step of any voltage
 			outputs[OUTS_OUTPUT + sequencer.index].setVoltage(0.f);
+			// Set the current sequencer index light to off
+			lights[STEP_LIGHT + sequencer.index].setBrightness(0.f);
 
 			sequencer.reset();
 		}
@@ -221,24 +223,55 @@ struct Botzinger : Module {
 		}
 	}
 
-	void process(const ProcessArgs& args) override {
+	void getClockedParameters()
+	{
+		// Expect the globalRate param to return a value -2<x<4
+		globalRate = params[RATE_PARAM].getValue();
+		// Convert to a decade scale - 10^x seconds
+		globalRate = pow(10.f, globalRate);
+
+		// stepLength
+		stepLength = params[TIME_PARAM + sequencer.index].getValue();
+		if (inputs[TIME_INPUT + sequencer.index].isConnected())
+		{
+			stepLength += inputs[TIME_INPUT + sequencer.index].getVoltage() * 0.1f;
+			stepLength = clamp(stepLength, 0.f, 1.f);
+		}
+		stepLength *= globalRate;
+
+		// beatLength is essentially how long a beat is if it is repeated n times in a step
+		repeats = params[REPEAT_PARAM + sequencer.index].getValue();
+		beatLength = stepLength / repeats;
+
+		// pulseWidth is a percentage of beatLength, basically pulsewidth
+		pulseWidth = params[WIDTH_PARAM + sequencer.index].getValue();
+		if (inputs[WIDTH_INPUT + sequencer.index].isConnected())
+		{
+			pulseWidth += inputs[WIDTH_INPUT + sequencer.index].getVoltage() * 0.1f;
+			pulseWidth = clamp(pulseWidth, 0.f, 1.f);
+		}
+		pulseWidth *= beatLength;
+	}
+
+	void process(const ProcessArgs &args) override
+	{
 		float out = 0.f;
-		
+
 		getClockMode();
 
 		checkTriggers();
-
-		getParameters();
 
 		if (sequencer.running)
 		{
 			if (clocked)
 			{
+				getClockedParameters();
+
 				// Run sequencer clocked
-				// Round off parameter values to a round number?
-				stepLength = round(stepLength);
-				beatLength = round(beatLength);
-				onLength = round(onLength);
+				// // Round off parameter values to a round number?
+				// stepLength = round(stepLength);
+				// beatLength = round(beatLength);
+				// pulseWidth = round(pulseWidth);
 
 				// Count how many clock pulses have arrived since we started this step
 				if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage()))
@@ -247,7 +280,7 @@ struct Botzinger : Module {
 					++beatClockCount;
 				}
 
-				if (beatClockCount <= onLength)
+				if (beatClockCount <= pulseWidth)
 				{
 					out = 10.f;
 				}
@@ -261,7 +294,8 @@ struct Botzinger : Module {
 				}
 			}
 			else
-			{ 
+			{
+				getFreeRunParameters();
 
 				if (beatTime.process(args.sampleTime) > beatLength)
 				{
@@ -271,8 +305,6 @@ struct Botzinger : Module {
 				{
 					nextStep();
 				}
-				
-
 
 				out = 10.f * float(pulse.process(args.sampleTime));
 			}
@@ -280,13 +312,13 @@ struct Botzinger : Module {
 
 		outputs[OUTS_OUTPUT + sequencer.index].setVoltage(out);
 		outputs[MAIN_OUTPUT].setVoltage(out);
-
 	}
 };
 
-
-struct BotzingerWidget : ModuleWidget {
-	BotzingerWidget(Botzinger* module) {
+struct BotzingerWidget : ModuleWidget
+{
+	BotzingerWidget(Botzinger *module)
+	{
 		setModule(module);
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Botzinger.svg")));
 
@@ -313,7 +345,7 @@ struct BotzingerWidget : ModuleWidget {
 		addParam(createParamCentered<FF15GSnapKnob>(mm2px(Vec(161.638, 50.45)), module, Botzinger::RATE_PARAM));
 		addParam(createParamCentered<FFDPW>(mm2px(Vec(167.958, 76.492)), module, Botzinger::START_PARAM));
 		addParam(createParamCentered<FFDPW>(mm2px(Vec(167.958, 97.487)), module, Botzinger::DIRECTION_PARAM));
-	
+
 		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(155.317, 24.189)), module, Botzinger::CLOCK_INPUT));
 		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(167.958, 24.189)), module, Botzinger::RESET_INPUT));
 		addInput(createInputCentered<FF01JKPort>(mm2px(Vec(155.317, 76.492)), module, Botzinger::START_INPUT));
@@ -323,5 +355,4 @@ struct BotzingerWidget : ModuleWidget {
 	}
 };
 
-
-Model* modelBotzinger = createModel<Botzinger, BotzingerWidget>("Botzinger");
+Model *modelBotzinger = createModel<Botzinger, BotzingerWidget>("Botzinger");
