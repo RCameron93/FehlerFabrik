@@ -81,12 +81,13 @@ struct PSIOP : Module
     PSIOP()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+     
         configParam(START_PARAM, -4.f, 4.f, 0.f, "Start Freq", "Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
         configParam(FINE_PARAM, -0.2f, 0.2f, 0.f, "Start Fine Freq");
         configParam(END_PARAM, -4.f, 4.f, 0.f, "End Freq", "Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
-        configParam(RATIO_PARAM, 0.f, 31.f, 0.f, "FM Ratios");
-        configParam(WAVE_PARAM, 0.f, 63.f, 0.f, "Wave Combination");
-        configParam(ALGO_PARAM, 0.f, 5.f, 0.f, "FM Algorithm");
+        configParam(RATIO_PARAM, 0.f, 31.f, 0.f, "FM Ratios", "", 0.f, 1.f, 1.f);
+        configParam(WAVE_PARAM, 0.f, 63.f, 0.f, "Wave Combination", "", 0.f, 1.f, 1.f);
+        configParam(ALGO_PARAM, 0.f, 5.f, 0.f, "FM Algorithm", "", 0.f, 1.f, 1.f);
         configParam(FB_PARAM, 0.f, 1.f, 0.f, "OP 1 Feedback");
         configParam(RATE1_PARAM, 0.f, 1.f, 0.5f, "Operator 1 & 3 Release Envelope");
         configParam(RATE2_PARAM, 0.f, 1.f, 0.5f, "Operator 2 & 4 Release Envelope");
@@ -94,6 +95,22 @@ struct PSIOP : Module
         configParam(RATE2ATTEN_PARAM, -1.f, 1.f, 0.f, "Rate 2 Attenuverter", "%", 0.f, 100.f);
         configParam(WAVEATTEN_PARAM, -1.f, 1.f, 0.f, "Wave Attenuverter", "%", 0.f, 100.f);
         configParam(RATIOATTEN_PARAM, -1.f, 1.f, 0.f, "Ratio Attenuverter", "%", 0.f, 100.f);
+
+        configInput(START_INPUT, "Start Freq CV");
+        configInput(END_INPUT, "End Freq CV");
+        configInput(RATIO_INPUT, "FM Ratio CV");
+        configInput(WAVE_INPUT, "Wave Combination CV");
+        configInput(ALGO_INPUT, "FM Algorithm CV");
+        configInput(FB_INPUT, "OP 1 Feedback CV");
+        configInput(RATE1_INPUT, "Operator 1 & 3 Release Envelope CV");
+        configInput(RATE2_INPUT, "Operator 2 & 4 Release Envelope CV");
+        configInput(SPEED_INPUT, "Pitch Envelope Speed CV");
+        configInput(TRIGGER_INPUT, "Trigger");
+        configInput(ACCENT_INPUT, "Accent Trigger");
+        configInput(CHOKE_INPUT, "Choke Trigger");
+
+        configOutput(OUT_OUTPUT, "Main");
+        configLight(OUT_LIGHT, "Output");
     }
 
     void process(const ProcessArgs &args) override

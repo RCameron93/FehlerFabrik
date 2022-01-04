@@ -36,6 +36,22 @@ struct Lilt : Module
 		NUM_LIGHTS
 	};
 
+	Lilt()
+	{
+		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+
+		configParam(ALPHA_RATE_PARAM, -2.f, 4.f, 1.f, "Alpha Clock Rate", " BPM", 2.f, 60.f);
+		configParam(BETA_SHIFT_PARAM, 0.f, 1.f, 0.5f, "Beta Phase Shift", "˚", 0.f, 360.f);
+		configParam(WIDTH_PARAM, 0.01f, 0.99f, 0.25f, "Clock Pulse Width", "%", 0.f, 100.f);
+
+		configInput(RATE_IN_INPUT, "Alpha Rate CV");
+		configInput(SHIFT_IN_INPUT, "Beta Shift CV");
+
+		configOutput(MAIN_OUTPUT, "Combined");
+		configOutput(ALPHA_OUTPUT, "Alpha");
+		configOutput(BETA_OUTPUT, "Beta");
+	}
+
 	float phase = 0.f;
 	float pw = 0.5f;
 	float freq = 1.f;
@@ -73,14 +89,6 @@ struct Lilt : Module
 		float offset = eucMod(phase + phaseShift, 1.0);
 		float v = (offset < pw) ? 1.0f : 0.f;
 		return v;
-	}
-
-	Lilt()
-	{
-		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(ALPHA_RATE_PARAM, -2.f, 4.f, 1.f, "Alpha Clock Rate", " BPM", 2.f, 60.f);
-		configParam(BETA_SHIFT_PARAM, 0.f, 1.f, 0.5f, "Beta Phase Shift", "˚", 0.f, 360.f);
-		configParam(WIDTH_PARAM, 0.01f, 0.99f, 0.25f, "Clock Pulse Width", "%", 0.f, 100.f);
 	}
 
 	void process(const ProcessArgs &args) override

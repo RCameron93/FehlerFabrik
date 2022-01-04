@@ -368,23 +368,40 @@ struct Nova : Module
 	Nova()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(START_PARAM, 0.f, 1.f, 0.f, "Sequencer Start");
-		configParam(RESET_PARAM, 0.f, 1.f, 0.f, "Sequencer Reset");
-		configParam(DIRECTION_PARAM, 0.f, 1.f, 0.f, "Sequencer Direction");
-		configParam(RECORD_PARAM, 0.f, 1.f, 0.f, "Sampler Record Start");
+		configButton(START_PARAM, "Sequencer Start");
+		configButton(RESET_PARAM, "Sequencer Reset");
+		configButton(DIRECTION_PARAM, "Sequencer Direction");
+		configButton(RECORD_PARAM, "Sampler Record Start");
 
 		for (int i = 0; i < 8; ++i)
 		{
 			configParam(GAINS_PARAM + i, 0.f, 1.f, 1.f, string::f("Sample %d Gain", i + 1), "dB", -10.f, 20.f);
-			configParam(MUTES_PARAM + i, 0.f, 1.f, 0.f, string::f("Sample %d Mute", i + 1));
-			configParam(SKIPS_PARAM + i, 0.f, 1.f, 0.f, string::f("Sample %d Skip", i + 1));
-			configParam(REVERSES_PARAM + i, 0.f, 1.f, 0.f, string::f("Sample %d Reverse", i + 1));
-			configParam(TRIGGERS_PARAM + i, 0.f, 1.f, 0.f, string::f("Sample %d Trigger", i + 1));
+			configSwitch(MUTES_PARAM + i, 0.f, 1.f, 0.f, string::f("Sample %d Mute", i + 1), {"Unmuted", "Muted"});
+			configSwitch(SKIPS_PARAM + i, 0.f, 1.f, 0.f, string::f("Sample %d Skip", i + 1), {"", "Skipped"});
+			configSwitch(REVERSES_PARAM + i, 0.f, 1.f, 0.f, string::f("Sample %d Reverse", i + 1), {"Forward", "Reversed"});
+			configButton(TRIGGERS_PARAM + i, string::f("Sample %d Trigger", i + 1));
+
+			configInput(TRIGGERS_INPUT + i, string::f("Step %d Trigger", i + 1));
+			configOutput(OUTS_OUTPUT + i, string::f("Step %d", i + 1));
+			configLight(SEQS_LIGHT + i * 3, string::f("Step %d", i * 3 + 1));
 		}
 
 		configParam(ATTACK_PARAM, 0.f, 1.f, 0.f, "Global Sample Attack");
 		configParam(RELEASE_PARAM, 0.f, 1.f, 1.f, "Global Sample Release");
 		configParam(PITCH_PARAM, -1.f, 1.f, 0.f, "Global Sample Pitch", "x", 4.f);
+
+		configInput(IN_INPUT, "Sampler");
+		configInput(CLOCK_INPUT, "Clock Trigger");
+		configInput(START_INPUT, "Start Trigger");
+		configInput(RESET_INPUT, "Reset Trigger");
+		configInput(DIRECTION_INPUT, "Direction Trigger");
+		configInput(RECORD_INPUT, "Record Arm Trigger");
+
+		configOutput(MAINOUT_OUTPUT, "Main");
+
+		configLight(REC_LIGHT, "Record Arm");
+
+		configBypass(IN_INPUT, MAINOUT_OUTPUT);
 	}
 
 	void displayLED()

@@ -58,17 +58,33 @@ struct Fax : Module
 	Fax()
 	{
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+
 		configParam(NSTEPS_PARAM, 1.f, 32.f, 16.f, "Sequencer Steps");
 		configParam(CLOCK_PARAM, -2.f, 6.f, 2.f, "Clock Rate", "BPM", 2.f, 60.f);
-		configParam(STEPADV_PARAM, 0.f, 1.f, 0.f, "Step");
-		configParam(RESET_PARAM, 0.f, 1.f, 0.f, "Reset");
+		configButton(STEPADV_PARAM, "Step");
+		configButton(RESET_PARAM, "Reset");
 		configParam(CV_PARAM, -5.f, 5.f, 0.f, "CV");
-		configParam(START_PARAM, 0.f, 1.f, 0.f, "Start");
-		configParam(REC_PARAM, 0.f, 1.f, 0.f, "Record");
-		configParam(STARTTOGGLE_PARAM, 0.f, 1.f, 0.f, "Start Mode");
-		configParam(RECTOGGLE_PARAM, 0.f, 1.f, 0.f, "Record Mode");
-		configParam(PRE_PARAM, 0.f, 1.f, 0.f, "Pre/Post");
-		configParam(AUTO_PARAM, 0.f, 1.f, 1.f, "Auto Stop");
+		configButton(START_PARAM, "Start");
+		configButton(REC_PARAM, "Record");
+		configSwitch(STARTTOGGLE_PARAM, 0.f, 1.f, 0.f, "Start Mode", {"Trigger", "Gate"});
+		configSwitch(RECTOGGLE_PARAM, 0.f, 1.f, 0.f, "Record Mode", {"Trigger", "Gate"});
+		configSwitch(PRE_PARAM, 0.f, 1.f, 0.f, "Pre/Post", {"Post", "Pre"});
+		configSwitch(AUTO_PARAM, 0.f, 1.f, 1.f, "Auto Stop", {"Continue", "Stop"});
+
+		configInput(NSTEPS_INPUT, "Sequencer Steps CV");
+		configInput(CLOCK_INPUT, "Clock Rate CV");
+		configInput(IN_INPUT, "CV");
+		configInput(STEPADV_INPUT, "Step Advance Trigger");
+		configInput(RESET_INPUT, "Reset Trigger");
+		configInput(START_INPUT, "Start Trigger");
+		configInput(REC_INPUT, "Record Trigger");
+
+		configOutput(OUT_OUTPUT, "CV");
+
+		for (int i = 0; i < 32; ++i)
+		{
+			configLight(LED1_LIGHT + i * 3, string::f("Step %d", i + 1));
+		}
 	}
 
 	dsp::SchmittTrigger stepTrigger;

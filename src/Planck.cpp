@@ -41,6 +41,17 @@ struct Planck : Module
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(DEPTH_PARAM, 1.f, 16.f, 16.f, "Bit Depth Reduction", "Bits");
         configParam(RATE_PARAM, 0.f, 100.f, 0.f, "Sample Rate Decimation");
+
+        configInput(DEPTH_INPUT, "Bit Depth Reducer");
+        configInput(DEPTH_AMT_INPUT, "Depth Reduction CV");
+        configInput(CRUSH_INPUT, "Sample Rate Decimator");
+        configInput(RATE_INPUT, "Sample Rate Decimation CV");
+
+        configOutput(DEPTH_OUTPUT, "Bit Depth Reducer");
+        configOutput(CRUSH_OUTPUT, "Sample Rate Decimator");
+
+        configBypass(DEPTH_INPUT, DEPTH_OUTPUT);
+        configBypass(CRUSH_INPUT, CRUSH_OUTPUT);
     }
 
     void process(const ProcessArgs &args) override

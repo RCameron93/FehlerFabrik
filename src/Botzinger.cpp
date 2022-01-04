@@ -74,14 +74,31 @@ struct Botzinger : Module
 
 		for (int i = 0; i < 8; ++i)
 		{
-			configParam(TIME_PARAM + i, 0.f, 1.f, .4f, "Step Time", "%", 0.f, 100.f);
-			configParam(REPEAT_PARAM + i, 1.f, 32.f, 1.f, "");
-			configParam(WIDTH_PARAM + i, 0.f, 1.f, 0.25, "Gate Width", "%", 0.f, 100.f);
+			int j = i + 1;
+
+			configParam(TIME_PARAM + i, 0.f, 1.f, .4f, string::f("Step %d Time", j), "%", 0.f, 100.f);
+			configParam(REPEAT_PARAM + i, 1.f, 32.f, 1.f, string::f("Step %d Repeats", j));
+			configParam(WIDTH_PARAM + i, 0.f, 1.f, 0.25, string::f("Step %d Width", j), "%", 0.f, 100.f);
+
+			configInput(TIME_INPUT + i, string::f("Step %d Time CV", j));
+			configInput(REPEAT_INPUT + i, string::f("Step %d Repeats CV", j));
+			configInput(WIDTH_INPUT + i, string::f("Step %d Width CV", j));
+
+			configOutput(OUTS_OUTPUT, string::f("Step %d", j));
+
+			configLight(STEP_LIGHT, string::f("Step %d", j));
 		}
 
 		configParam(RATE_PARAM, -2.f, 4.f, 0.f, "Global Rate Multiplier", "", 10.f);
 		configParam(START_PARAM, 0.f, 1.f, 0.f, "Start/Stop");
 		configParam(DIRECTION_PARAM, 0.f, 1.f, 0.f, "Sequencer Direction");
+
+		configInput(CLOCK_INPUT, "Clock Trig");
+		configInput(RESET_INPUT, "Reset Trig");
+		configInput(START_INPUT, "Start Trig");
+		configInput(DIRECTION_INPUT, "Direction Trig");
+
+		configOutput(MAIN_OUTPUT, "Main");
 
 		sequencer.running = true;
 	}

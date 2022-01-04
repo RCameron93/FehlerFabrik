@@ -53,8 +53,17 @@ struct Luigi : Module
     Luigi()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+
         configParam(RATE_PARAM, 0.f, 12.f, 7.f, "Noise Generator Rate");
         configParam(AMP_PARAM, 0.f, 1.f, 1.f, "Noise Amplitude");
+
+        configInput(CLOCK_INPUT, "External Clock Trigger");
+        configInput(RATE_INPUT, "Internal Clock Rate CV");
+        configInput(AMP_INPUT, "Output Amplitude CV");
+
+        configOutput(RANDOM_OUTPUT, "Random Clock");
+        configOutput(DUST_OUTPUT, "Dust");
+        configOutput(NOISE_OUTPUT, "Noise");
     }
 
     void process(const ProcessArgs &args) override

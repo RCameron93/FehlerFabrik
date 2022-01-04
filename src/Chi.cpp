@@ -54,8 +54,25 @@ struct Chi : Module
 		configParam(LOW_GAIN_CV_PARAM, -1.f, 1.f, 0.f, "Low Gain CV Trim", "%", 0.f, 100.f);
 		configParam(MID_GAIN_CV_PARAM, -1.f, 1.f, 0.f, "Mid Gain CV Trim", "%", 0.f, 100.f);
 		configParam(HIGH_GAIN_CV_PARAM, -1.f, 1.f, 0.f, "High Gain CV Trim", "%", 0.f, 100.f);
-		configParam(LOW_X_PARAM, 0.f, 1.f, 0.49728f, "Low/Mid X Freq", "Hz", 8.f, 80.f); // default values slightly less than 0.5 to give the illusion that centre position produces a nice round freq
-		configParam(HIGH_X_PARAM, 0.f, 1.f, 0.49514f, "Mid/High X Freq", "Hz", 8.f, 1000.f);
+		configParam(LOW_X_PARAM, 0.f, 1.f, 0.49728f, "Low/Mid Crossover Freq", "Hz", 8.f, 80.f); // default values slightly less than 0.5 to give the illusion that centre position produces a nice round freq
+		configParam(HIGH_X_PARAM, 0.f, 1.f, 0.49514f, "Mid/High Crossover Freq", "Hz", 8.f, 1000.f);
+
+		configInput(LOW_GAIN_INPUT, "Low Gain CV");
+		configInput(MID_GAIN_INPUT, "Mid Gain CV");
+		configInput(HIGH_GAIN_INPUT, "High Gain CV");
+		configInput(LOW_X_INPUT, "Low/Mid Crossover Freq CV");
+		configInput(HIGH_X_INPUT, "Mid/High Crossover Freq CV");
+		configInput(IN_INPUT, "Main");
+
+		configOutput(LOW_OUTPUT, "Low Band");
+		configOutput(MID_OUTPUT, "Mid Band");
+		configOutput(HIGH_OUTPUT, "High Band");
+		configOutput(OUT_OUTPUT, "Combined");
+
+		configBypass(IN_INPUT, OUT_OUTPUT);
+		configBypass(IN_INPUT, LOW_OUTPUT);
+		configBypass(IN_INPUT, MID_OUTPUT);
+		configBypass(IN_INPUT, HIGH_OUTPUT);
 	}
 	LinkwitzRiley4Filter filter[32];
 

@@ -37,6 +37,15 @@ struct Sigma : Module
     Sigma()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+
+        configInput(IN_INPUT, "Main");
+
+        std::string offsets[8] = {"-4", "-3", "-2", "-1", "+1", "+2", "+3", "+4"};
+        for (int i = 0; i < 8; ++i)
+        {
+            configOutput(MINUS4_OUTPUT + i, offsets[i] + "v");
+            configBypass(IN_INPUT, MINUS4_OUTPUT + i);
+        }
     }
 
     void process(const ProcessArgs &args) override
@@ -46,7 +55,7 @@ struct Sigma : Module
         for (int c = 0; c < channels; ++c)
         {
             float input = inputs[IN_INPUT].getPolyVoltage(c);
-            
+
             for (int i = 0; i < 4; ++i)
             {
                 float outAdd = input + 4 - i;

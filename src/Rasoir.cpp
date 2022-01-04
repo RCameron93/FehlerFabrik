@@ -184,7 +184,7 @@ struct Rasoir : Module
 		configParam(THRESH_PARAM, -10.f, 10.f, 0.f, "High/Low Threshold", "V");
 		configParam(WET_PARAM, 0.f, 1.f, 1.f, "Wet/Dry Mix", "%", 0.f, 100.f);
 		configParam(THRESHTRIM_PARAM, -1.f, 1.f, 0.f, "Threshold CV Amount", "%", 0.f, 100.f);
-		configParam(DC_PARAM, 0.f, 1.f, 1.f, "DC Offset Filter");
+		configSwitch(DC_PARAM, 0.f, 1.f, 1.f, "DC Offset Filter", {"Off", "On"});
 		for (int i = 0; i < 8; ++i)
 		{
 			configParam(LOWSHIFTTRIM_PARAM + i, -1.f, 1.f, 0.f, "CV Amount", "%", 0.f, 100.f);
@@ -198,6 +198,26 @@ struct Rasoir : Module
 		configParam(HIGHFOLD_PARAM, 0.1f, 1.f, 1.f, "High Wavefold");
 		configParam(LOWSLEW_PARAM, 0.f, 1.f, 0.f, "Low Slew Limiter");
 		configParam(HIGHSLEW_PARAM, 0.f, 1.f, 0.f, "High Slew Limiter");
+
+		configInput(THRESH_INPUT, "Voltage Threshold CV");
+		configInput(IN_INPUT, "Signal");
+		configInput(WET_INPUT, "Dry/Wet CV");
+		configInput(LOWSHIFT_INPUT, "Low Shift CV");
+		configInput(HIGHSHIFT_INPUT, "High Shift CV");
+		configInput(LOWPINCH_INPUT, "Low Pinch CV");
+		configInput(HIGHPINCH_INPUT, "High Pinch CV");
+		configInput(LOWFOLD_INPUT, "Low Wavefold CV");
+		configInput(HIGHFOLD_INPUT, "High Wavefold CV");
+		configInput(LOWSLEW_INPUT, "Low Slew Limiter CV");
+		configInput(HIGHSLEW_INPUT, "High Slew Limiter CV");
+
+		configOutput(LOW_OUTPUT, "Low Voltage");
+		configOutput(OUT_OUTPUT, "Main");
+		configOutput(HIGH_OUTPUT, "High Voltage");
+
+		configBypass(IN_INPUT, LOW_OUTPUT);
+		configBypass(IN_INPUT, OUT_OUTPUT);
+		configBypass(IN_INPUT, HIGH_OUTPUT);
 	}
 
 	float pincher(float input, float amount)

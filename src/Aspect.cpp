@@ -21,39 +21,14 @@ struct Aspect : Module
     };
     enum OutputIds
     {
-        D2_OUTPUT,
-        D4_OUTPUT,
-        D8_OUTPUT,
-        D16_OUTPUT,
-        D32_OUTPUT,
-        D64_OUTPUT,
-        S1_OUTPUT,
-        S2_OUTPUT,
-        S3_OUTPUT,
-        S4_OUTPUT,
-        S5_OUTPUT,
-        S6_OUTPUT,
-        S7_OUTPUT,
-        S8_OUTPUT,
+        ENUMS(DIVISOR1_OUTPUT, 6),
+        ENUMS(SEQ1_OUTPUT, 8),
         NUM_OUTPUTS
     };
     enum LightIds
     {
-        D2_LIGHT,
-        D4_LIGHT,
-        D8_LIGHT,
-        D16_LIGHT,
-        D32_LIGHT,
-        D64_LIGHT,
-        S1_LIGHT,
-        S2_LIGHT,
-        S3_LIGHT,
-        S4_LIGHT,
-        S5_LIGHT,
-        S6_LIGHT,
-        S7_LIGHT,
-        S8_LIGHT,
-
+        ENUMS(DIVISOR1_LIGHT, 6),
+        ENUMS(SEQ1_LIGHT, 8),
         NUM_LIGHTS
     };
 
@@ -66,6 +41,21 @@ struct Aspect : Module
     Aspect()
     {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+
+        configInput(TRIG_INPUT, "Trigger");
+        configInput(RESET_INPUT, "Reset");
+
+        for (int i = 0; i < 6; ++i)
+        {
+            configOutput(DIVISOR1_OUTPUT + i, string::f("%dth's", divisors[i]));
+            configLight(DIVISOR1_LIGHT + i, string::f("%dth's", divisors[i]));
+        }
+
+        for (int i = 0; i < 8; ++i)
+        {
+            configOutput(SEQ1_OUTPUT + i, string::f("Step %d", i + 1));
+            configLight(SEQ1_LIGHT + i, string::f("Step %d", i + 1));
+        }
     }
 
     void process(const ProcessArgs &args) override
@@ -95,8 +85,8 @@ struct Aspect : Module
             {
                 out = 10;
             }
-            outputs[D2_OUTPUT + i].setVoltage(out);
-            lights[D2_LIGHT + i].setBrightness(out);
+            outputs[DIVISOR1_OUTPUT + i].setVoltage(out);
+            lights[DIVISOR1_LIGHT + i].setBrightness(out);
         }
 
         // Process gate sequencer
@@ -105,8 +95,8 @@ struct Aspect : Module
         seqGates[seqIndex] = 10;
         for (int i = 0; i < 8; ++i)
         {
-            outputs[S1_OUTPUT + i].setVoltage(seqGates[i]);
-            lights[S1_LIGHT + i].setBrightness(seqGates[i]);
+            outputs[SEQ1_OUTPUT + i].setVoltage(seqGates[i]);
+            lights[SEQ1_LIGHT + i].setBrightness(seqGates[i]);
         }
     }
 };
@@ -128,14 +118,14 @@ struct AspectWidget : ModuleWidget
 
         for (int i = 0; i < 6; i++)
         {
-            addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(18.714, 49.09 + i * 12.83)), module, Aspect::D2_OUTPUT + i));
-            addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(25.714, 49.09 + i * 12.83)), module, Aspect::D2_LIGHT + i));
+            addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(18.714, 49.09 + i * 12.83)), module, Aspect::DIVISOR1_OUTPUT + i));
+            addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(25.714, 49.09 + i * 12.83)), module, Aspect::DIVISOR1_LIGHT + i));
         }
 
         for (int i = 0; i < 8; i++)
         {
-            addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(38.771, 23.417 + i * 12.83)), module, Aspect::S1_OUTPUT + i));
-            addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(45.771, 23.417 + i * 12.83)), module, Aspect::S1_LIGHT + i));
+            addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(38.771, 23.417 + i * 12.83)), module, Aspect::SEQ1_OUTPUT + i));
+            addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(45.771, 23.417 + i * 12.83)), module, Aspect::SEQ1_LIGHT + i));
         }
     }
 };

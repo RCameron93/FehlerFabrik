@@ -13,14 +13,7 @@ struct Monte : Module
     {
         INTCLOCK_PARAM,
         STEPS_PARAM,
-        PROB1_PARAM,
-        PROB2_PARAM,
-        PROB3_PARAM,
-        PROB4_PARAM,
-        PROB5_PARAM,
-        PROB6_PARAM,
-        PROB7_PARAM,
-        PROB8_PARAM,
+        ENUMS(PROB1_PARAM, 8),
         NUM_PARAMS
     };
     enum InputIds
@@ -29,39 +22,18 @@ struct Monte : Module
         EXTCLOCK_INPUT,
         STEPS_INPUT,
         RESET_INPUT,
-        PROB1_INPUT,
-        PROB2_INPUT,
-        PROB3_INPUT,
-        PROB4_INPUT,
-        PROB5_INPUT,
-        PROB6_INPUT,
-        PROB7_INPUT,
-        PROB8_INPUT,
+        ENUMS(PROB1_INPUT, 8),
         NUM_INPUTS
     };
     enum OutputIds
     {
-        GATE1_OUTPUT,
-        GATE2_OUTPUT,
-        GATE3_OUTPUT,
-        GATE4_OUTPUT,
-        GATE5_OUTPUT,
-        GATE6_OUTPUT,
-        GATE7_OUTPUT,
-        GATE8_OUTPUT,
+        ENUMS(GATE1_OUTPUT, 8),
         MAIN_OUTPUT,
         NUM_OUTPUTS
     };
     enum LightIds
     {
-        GATE1_LIGHT,
-        GATE2_LIGHT,
-        GATE3_LIGHT,
-        GATE4_LIGHT,
-        GATE5_LIGHT,
-        GATE6_LIGHT,
-        GATE7_LIGHT,
-        GATE8_LIGHT,
+        ENUMS(GATE1_LIGHT, 8),
         MAIN_LIGHT,
         NUM_LIGHTS
     };
@@ -82,10 +54,25 @@ struct Monte : Module
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(INTCLOCK_PARAM, -2.f, 6.f, 2.f, "Clock Rate", "BPM", 2.f, 60.f);
         configParam(STEPS_PARAM, 1.f, 16.f, 8.f, "Sequencer Steps");
+
+        configInput(INTCLOCK_INPUT, "Internal Clock CV");
+        configInput(EXTCLOCK_INPUT, "External Clock Trigger");
+        configInput(STEPS_INPUT, "Steps CV");
+        configInput(RESET_INPUT, "Reset Trigger");
+
+        configOutput(MAIN_OUTPUT, "Combined");
+
+        configLight(MAIN_LIGHT, "Output");
+
         for (int i = 0; i < 8; ++i)
         {
-            configParam(PROB1_PARAM + i, 0.f, 1.f, 0.5f, "Step Probability", "%", 0.f, 100.f, 0.f);
+            configParam(PROB1_PARAM + i, 0.f, 1.f, 0.5f, string::f("Step %d Probability", i + 1), "%", 0.f, 100.f, 0.f);
+            configInput(PROB1_INPUT + i, string::f("Step %d", i + 1));
+            configOutput(GATE1_OUTPUT + i, string::f("Step %d", i + 1));
+            configLight(GATE1_LIGHT + i, string::f("Step %d", i + 1));
         }
+
+        configBypass(EXTCLOCK_INPUT, MAIN_OUTPUT);
     }
 
     int getSteps()
@@ -217,47 +204,23 @@ struct MonteWidget : ModuleWidget
 
         addParam(createParamCentered<FF08GKnob>(mm2px(Vec(20.215, 49.089)), module, Monte::INTCLOCK_PARAM));
         addParam(createParamCentered<FF08GSnapKnob>(mm2px(Vec(20.215, 87.568)), module, Monte::STEPS_PARAM));
-        addParam(createParamCentered<FF08GKnob>(mm2px(Vec(46.624, 23.428)), module, Monte::PROB1_PARAM));
-        addParam(createParamCentered<FF08GKnob>(mm2px(Vec(46.624, 36.252)), module, Monte::PROB2_PARAM));
-        addParam(createParamCentered<FF08GKnob>(mm2px(Vec(46.624, 49.089)), module, Monte::PROB3_PARAM));
-        addParam(createParamCentered<FF08GKnob>(mm2px(Vec(46.624, 61.923)), module, Monte::PROB4_PARAM));
-        addParam(createParamCentered<FF08GKnob>(mm2px(Vec(46.624, 74.758)), module, Monte::PROB5_PARAM));
-        addParam(createParamCentered<FF08GKnob>(mm2px(Vec(46.624, 87.592)), module, Monte::PROB6_PARAM));
-        addParam(createParamCentered<FF08GKnob>(mm2px(Vec(46.624, 100.429)), module, Monte::PROB7_PARAM));
-        addParam(createParamCentered<FF08GKnob>(mm2px(Vec(46.624, 113.263)), module, Monte::PROB8_PARAM));
+
+        for (int i = 0; i < 8; ++i)
+        {
+            float delta = 12.83;
+            addParam(createParamCentered<FF08GKnob>(mm2px(Vec(46.624, 23.428 + i * delta)), module, Monte::PROB1_PARAM + i));
+            addInput(createInputCentered<FF01JKPort>(mm2px(Vec(34.043, 23.428 + i * delta)), module, Monte::PROB1_INPUT + i));
+            addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(60.924, 23.428 + i * delta)), module, Monte::GATE1_OUTPUT + i));
+            addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.705, 23.418 + i * delta)), module, Monte::GATE1_LIGHT + i));
+        }
 
         addInput(createInputCentered<FF01JKPort>(mm2px(Vec(20.215, 61.928)), module, Monte::INTCLOCK_INPUT));
         addInput(createInputCentered<FF01JKPort>(mm2px(Vec(20.215, 23.417)), module, Monte::EXTCLOCK_INPUT));
         addInput(createInputCentered<FF01JKPort>(mm2px(Vec(20.215, 100.092)), module, Monte::STEPS_INPUT));
         addInput(createInputCentered<FF01JKPort>(mm2px(Vec(20.215, 36.251)), module, Monte::RESET_INPUT));
 
-        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(34.043, 23.428)), module, Monte::PROB1_INPUT));
-        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(34.043, 36.252)), module, Monte::PROB2_INPUT));
-        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(34.043, 49.089)), module, Monte::PROB3_INPUT));
-        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(34.043, 61.923)), module, Monte::PROB4_INPUT));
-        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(34.043, 74.758)), module, Monte::PROB5_INPUT));
-        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(34.043, 87.592)), module, Monte::PROB6_INPUT));
-        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(34.043, 100.429)), module, Monte::PROB7_INPUT));
-        addInput(createInputCentered<FF01JKPort>(mm2px(Vec(34.043, 113.263)), module, Monte::PROB8_INPUT));
-
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(60.924, 23.428)), module, Monte::GATE1_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(60.924, 36.252)), module, Monte::GATE2_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(60.924, 49.089)), module, Monte::GATE3_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(60.924, 61.923)), module, Monte::GATE4_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(60.924, 74.758)), module, Monte::GATE5_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(60.924, 87.592)), module, Monte::GATE6_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(60.924, 100.429)), module, Monte::GATE7_OUTPUT));
-        addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(60.924, 113.263)), module, Monte::GATE8_OUTPUT));
         addOutput(createOutputCentered<FF01JKPort>(mm2px(Vec(20.214, 113.263)), module, Monte::MAIN_OUTPUT));
 
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.705, 23.418)), module, Monte::GATE1_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.705, 36.252)), module, Monte::GATE2_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.705, 49.089)), module, Monte::GATE3_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.705, 61.923)), module, Monte::GATE4_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.705, 74.758)), module, Monte::GATE5_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.705, 87.592)), module, Monte::GATE6_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.705, 100.429)), module, Monte::GATE7_LIGHT));
-        addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(67.705, 113.263)), module, Monte::GATE8_LIGHT));
         addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(20.214, 120.263)), module, Monte::MAIN_LIGHT));
     }
 };

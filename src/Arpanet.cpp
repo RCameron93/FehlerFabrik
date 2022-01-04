@@ -67,20 +67,43 @@ struct Arpanet : Module
 
 		for (int i = 0; i < 16; ++i)
 		{
-			configParam(GATE1_PARAM + i, 0.f, 2.f, 1.f, "Step Gate Assign");
-			configParam(SLIDER1_PARAM + i, 0.f, 12.f, 6.f, "Step Voltage", "V");
+			configSwitch(GATE1_PARAM + i, 0.f, 2.f, 1.f, string::f("Step %d Gate Assign", i + 1), {"Bus 3", "Bus 2", "Bus 1"});
+			configParam(SLIDER1_PARAM + i, 0.f, 12.f, 6.f, string::f("Step %d Voltage", i + 1), "V");
+			configLight(POS1_LIGHT, string::f("Step %d", i + 1));
 		}
 
-		configParam(STARTTOGGLE_PARAM, 0.f, 1.f, 0.f, "Start CV Mode");
-		configParam(SKIP_PARAM, 0.f, 1.f, 0.f, "Skip Sequencer Step");
-		configParam(SKIPTOGGLE_PARAM, 0.f, 2.f, 1.f, "Gate Bus 3 Assign");
-		configParam(STARTSTOP_PARAM, 0.f, 1.f, 0.f, "Sequencer Start/Stop");
+		configSwitch(STARTTOGGLE_PARAM, 0.f, 1.f, 0.f, "Start CV Mode", {"Trigger", "Gate"});
+		configButton(SKIP_PARAM, "Skip Sequencer Step");
+		configSwitch(SKIPTOGGLE_PARAM, 0.f, 2.f, 1.f, "Gate Bus 3 Assign", {"Reset", "", "Skip Step"});
+		configButton(STARTSTOP_PARAM, "Sequencer Start/Stop");
 		configParam(CLOCK_PARAM, -2.f, 6.f, 2.f, "Clock Rate", "BPM", 2.f, 60.f);
 		configParam(FM_PARAM, 0.f, 1.f, 0.f, "Clock FM Amount");
 		configParam(PULSE_PARAM, 0.05f, 1.f, 0.05f, "Clock Pulse-Width");
-		configParam(RESET_PARAM, 0.f, 1.f, 0.f, "Sequencer Reset");
-		configParam(LENGTH_PARAM, 0.f, 1.f, 0.f, "Sequence Length");
-		configParam(RANDOM_PARAM, 0.f, 1.f, 0.f, "Direction Mode");
+		configButton(RESET_PARAM, "Sequencer Reset");
+		configSwitch(LENGTH_PARAM, 0.f, 1.f, 0.f, "Sequence Length", {"16 Steps", "8 Steps"});
+		configSwitch(RANDOM_PARAM, 0.f, 1.f, 0.f, "Direction Mode", {"Sequential", "Random"});
+
+		configInput(QUANTCV_INPUT, "Quantizer CV Offset");
+		configInput(SKIP_INPUT, "Skip Step Trig");
+		configInput(START_INPUT, "Start Trig");
+		configInput(QUANTA_INPUT, "Quantizer A");
+		configInput(QUANTB_INPUT, "Quantizer B");
+		configInput(RESET_INPUT, "Reset Trig");
+		configInput(STOP_INPUT, "Stop Trig");
+		configInput(STARTSTOP_INPUT, "Start/Stop Trig");
+		configInput(FM_INPUT, "Clock FM CV");
+		configInput(PULSE_INPUT, "Clock Pulse Width CV");
+
+		configOutput(GATEBUS1_OUTPUT, "Gate Bus 1");
+		configOutput(GATEBUS2_OUTPUT, "Gate Bus 2");
+		configOutput(GATEBUS3_OUTPUT, "Gate Bus 3");
+		configOutput(POSITION1_OUTPUT, "Position 1");
+		configOutput(CLOCKEDGATE1_OUTPUT, "Clocked Gate Bus 1");
+		configOutput(QUANTA_OUTPUT, "Quantizer A");
+		configOutput(QUANTB_OUTPUT, "Quantizer B");
+		configOutput(CLOCK_OUTPUT, "Clock");
+		configOutput(SEQA_OUTPUT, "Sequencer A");
+		configOutput(SEQB_OUTPUT, "Sequencer B");
 	}
 
 	dsp::SchmittTrigger resetTrigger;
