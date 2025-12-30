@@ -130,6 +130,14 @@
       "tags": [
         "Sequencer"
       ]
+    },
+    {
+      "slug": "Spread",
+      "name": "Spread",
+      "description": "Generate spread voltages",
+      "tags": [
+        "utility"
+      ]
     }
   ]
 }

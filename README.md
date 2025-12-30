@@ -42,7 +42,7 @@ While Chi can work polyphonically, it's currently **not** very well optimised - 
 
 ![Image of Fax](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFFax.png)
 
-Fax is a sampling sequencer that will produce a crude facsimile  of a recorded input. If no input is present it will record the movement of it's big central knob. The transport controls are similar to Arpanet's. 
+Fax is a sampling sequencer that will produce a crude facsimile of a recorded input. If no input is present it will record the movement of it's big central knob. The transport controls are similar to Arpanet's. 
 
 When recording is active, the input is sampled whenever the sequencer moves to the next step (which may be caused by the internal clock or a trigger present on the step input/button). Whether the sampled voltage is stored in the step the sequencer just left, or the one it is moving to, is determined by the Pre/Post switch. If the Auto Stop switch is on (up position), then recording will automatically stop when the maximum number of steps is reached. When recording has finished, the sampled voltages are played back in order by the sequencer on the output jack. 
 
