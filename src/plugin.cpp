@@ -21,6 +21,7 @@ void init(Plugin *p)
 	p->addModel(modelNova);
 	p->addModel(modelLilt);
 	p->addModel(modelBotzinger);
+	p->addModel(modelSpread);
 
 	// Any other plugin initialization may go here.
 	// As an alternative, consider lazy-loading assets and lookup tables when your module is created to reduce startup times of Rack.
