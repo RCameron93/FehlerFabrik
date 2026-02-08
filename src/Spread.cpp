@@ -32,12 +32,6 @@ struct Spread : Module {
 	}
 
 	void process(const ProcessArgs& args) override {
-		float in = 10.f;
-		int channels = 1;
-
-		for (int i = 0; i < 8; i++) {
-
-		}
 	}
 };
 
