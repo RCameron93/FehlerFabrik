@@ -25,4 +25,4 @@ extern Model *modelNova;
 extern Model *modelLilt;
 extern Model* modelBotzinger;
 // extern Model* modelSpread;
-extern Model* modelmarkov;
+extern Model* modelShaney;

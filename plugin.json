@@ -132,16 +132,8 @@
       ]
     },
     {
-      "slug": "Spread",
-      "name": "Spread",
-      "description": "Generate spread voltages",
-      "tags": [
-        "Utility"
-      ]
-    },
-    {
-      "slug": "markov",
-      "name": "Markov",
+      "slug": "Shaney",
+      "name": "Shaney",
       "description": "markov step sequencer",
       "tags": [
         "sequencer",

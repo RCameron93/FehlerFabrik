@@ -1,7 +1,7 @@
 #include "plugin.hpp"
 
 
-struct Markov : Module {
+struct Shaney : Module {
 	enum ParamId {
 		PARAMS_LEN
 	};
@@ -15,7 +15,7 @@ struct Markov : Module {
 		LIGHTS_LEN
 	};
 
-	Markov() {
+	Shaney() {
 		config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
 	}
 
@@ -24,10 +24,10 @@ struct Markov : Module {
 };
 
 
-struct MarkovWidget : ModuleWidget {
-	MarkovWidget(Markov* module) {
+struct ShaneyWidget : ModuleWidget {
+	ShaneyWidget(Shaney* module) {
 		setModule(module);
-		setPanel(createPanel(asset::plugin(pluginInstance, "res/markov.svg")));
+		setPanel(createPanel(asset::plugin(pluginInstance, "res/shaney.svg")));
 
 		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
@@ -37,4 +37,4 @@ struct MarkovWidget : ModuleWidget {
 };
 
 
-Model* modelMarkov = createModel<Markov, MarkovWidget>("markov");
+Model* modelShaney = createModel<Shaney, ShaneyWidget>("shaney");
