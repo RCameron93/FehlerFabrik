@@ -1,17 +1,25 @@
 #include "plugin.hpp"
 
+#include "ffCommon.hpp"
 
 struct Shaney : Module {
 	enum ParamId {
+		ENUMS(PROB_PARAM, 16),
+		ENUMS(STEP_PARAM, 16),
 		PARAMS_LEN
 	};
 	enum InputId {
+		CLOCK_INPUT,
+		RESET_INPUT,
+		RUN_INPUT,
 		INPUTS_LEN
 	};
 	enum OutputId {
+		ENUMS(GATE_OUTPUT, 16),
 		OUTPUTS_LEN
 	};
 	enum LightId {
+		ENUMS(ELEMENT_LIGHT, 16 * 16),
 		LIGHTS_LEN
 	};
 
