@@ -27,14 +27,14 @@ struct Shaney : Module {
 struct ShaneyWidget : ModuleWidget {
 	ShaneyWidget(Shaney* module) {
 		setModule(module);
-		setPanel(createPanel(asset::plugin(pluginInstance, "res/shaney.svg")));
+		setPanel(createPanel(asset::plugin(pluginInstance, "res/Shaney.svg")));
 
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 	}
 };
 
 
-Model* modelShaney = createModel<Shaney, ShaneyWidget>("shaney");
+Model* modelShaney = createModel<Shaney, ShaneyWidget>("Shaney");
