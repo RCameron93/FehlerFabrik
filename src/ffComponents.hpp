@@ -61,6 +61,13 @@ struct FF08GSnapKnob : FF08GKnob
         snap = true;
     }
 };
+struct FFE08GKnob : RoundKnob
+{
+    FFE08GKnob()
+    {
+        setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Components/FFE08G.svg")));
+    }
+};
 struct FF10BKnob : RoundKnob
 {
     FF10BKnob()
