@@ -2,18 +2,18 @@
 
 #include "ffCommon.hpp"
 
-const int n_steps = 16;
+const int n_steps = 8;
 // For a sequence of n steps the Markov array will have n*n elements
 
 struct Shaney : Module {
 	enum ParamId {
 		ENUMS(PROB_PARAM, n_steps),
-		ENUMS(STEP_PARAM, n_steps),
+		ENUMS(STEP_PARAM, n_steps * n_steps),
 		PARAMS_LEN
 	};
 	enum InputId {
+		ENUMS(JUMP_INPUT, n_steps),
 		CLOCK_INPUT,
-		RESET_INPUT,
 		RUN_INPUT,
 		INPUTS_LEN
 	};
@@ -22,7 +22,7 @@ struct Shaney : Module {
 		OUTPUTS_LEN
 	};
 	enum LightId {
-		ENUMS(ELEMENT_LIGHT, n_steps * n_steps),
+		ENUMS(STEP_LIGHT, n_steps),
 		LIGHTS_LEN
 	};
 
@@ -50,23 +50,30 @@ struct ShaneyWidget : ModuleWidget {
 		addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		float led_x_base = RACK_GRID_WIDTH;
-		float led_y_base = 24;
-		float x_delta = 11;
-		float y_delta = 5.5;
+		float knob_x_base = 2 * RACK_GRID_WIDTH;
+		float knob_y_base = 24;
+		float x_delta = 13;
+		float y_delta = 11;
+
 
 		for (int i = 0; i < n_steps; ++i)
 		{
-			float x_pos = led_x_base + i * x_delta;
+			float x_pos = knob_x_base + i * x_delta;
 			for (int j = 0; j < n_steps; ++j)
 			{
-				float y_pos = led_y_base + (j % n_steps) * y_delta;
-				Vec led_pos = Vec(x_pos, y_pos);
-				addChild(createLightCentered<MediumLight<RedLight>>(mm2px(led_pos), module, Shaney::ELEMENT_LIGHT + i));
+				float y_pos = knob_y_base + (j % n_steps) * y_delta;
+				Vec knob_pos = Vec(x_pos, y_pos);
+				int element_index = i * n_steps + j;
+				addParam(createParamCentered<FF08GKnob>(mm2px(knob_pos), module, Shaney::PROB_PARAM + element_index));
 			}
-			float button_y_pos = 14;
-			Vec button_pos = Vec(x_pos, button_y_pos);
-			addParam(createParamCentered<FFDPW>(mm2px(button_pos), module, Shaney::STEP_PARAM + i));
+
+			float in_y_pos = 14;
+			Vec in_pos = Vec(x_pos, in_y_pos);
+			addInput(createInputCentered<FF01JKPort>(mm2px(in_pos), module, Shaney::JUMP_INPUT + i));
+
+			float led_y_pos = 108;
+			Vec led_pos = Vec(x_pos, led_y_pos);
+			addChild(createLightCentered<MediumLight<RedLight>>(mm2px(led_pos), module, Shaney::STEP_LIGHT + i));
 
 			float out_y_pos = 115;
 			Vec out_pos = Vec(x_pos, out_y_pos);
