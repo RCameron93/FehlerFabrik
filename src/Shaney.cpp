@@ -37,6 +37,8 @@ struct Shaney : Module {
 	dsp::SchmittTrigger jumpTriggers[n_steps];
 
 	int sequencer_index = 0;
+	bool out = false;
+	bool running = true;
 
 	Shaney() {
 		config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
@@ -77,18 +79,30 @@ struct Shaney : Module {
 				running_total += chance_of_stopping;
 				cumulative_probabilities[n_steps] = running_total;
 				float random_value = random::uniform() * running_total;
-				auto bisected = std::upper_bound (std::begin(cumulative_probabilities), std::end(cumulative_probabilities), random_value);
-				std::size_t new_index = bisected - std::begin(cumulative_probabilities);
-				outputs[GATE_OUTPUT + 1].setVoltage(running_total);
-				outputs[GATE_OUTPUT + 2].setVoltage(random_value);
-				outputs[GATE_OUTPUT + 3].setVoltage(chance_of_stopping);
-				outputs[GATE_OUTPUT].setVoltage(new_index);
-				// for (int i = 0; i < n_steps; ++i)
-				// {
-				// 	outputs[GATE_OUTPUT + i].setVoltage(cumulative_probabilities[i + 1]);
-				// }
+				auto bisected = std::upper_bound(std::begin(cumulative_probabilities), std::end(cumulative_probabilities), random_value);
+				int new_index = bisected - std::begin(cumulative_probabilities);
+				if (new_index < n_steps) {
+					sequencer_index = new_index;
+				}
 			}
+		}
 
+				
+		for (int i = 0; i < n_steps; ++i)
+		{
+			outputs[GATE_OUTPUT + i];
+			lights[STEP_LIGHT + i].setBrightness(0);
+			if (jumpTriggers[i].process(inputs[JUMP_INPUT + i].getVoltage()))
+			{
+				sequencer_index = i;
+			}
+		}
+
+		float out = clockTrigger.isHigh() * 10;
+		lights[STEP_LIGHT + sequencer_index].setBrightness(1);
+		if (running)
+		{
+			outputs[GATE_OUTPUT + sequencer_index].setVoltage(out);
 		}
 	}
 };
