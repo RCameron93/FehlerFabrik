@@ -165,6 +165,9 @@ struct ShaneyWidget : ModuleWidget {
 		Vec run_input_pos = Vec(input_x_base, 60);
 		addInput(createInputCentered<FF01JKPort>(mm2px(run_input_pos), module, Shaney::RUN_INPUT));
 
+		Vec run_light_pos = Vec(input_x_base, 70);
+		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(run_light_pos), module, Shaney::RUN_LIGHT));
+
 		float knob_x_base = 2 * RACK_GRID_WIDTH;
 		float knob_y_base = 24;
 		float x_delta = 13;
