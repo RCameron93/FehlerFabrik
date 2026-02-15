@@ -32,7 +32,7 @@ struct Shaney : Module {
 	};
 
 	dsp::SchmittTrigger clockTrigger;
-
+	dsp::SchmittTrigger runTrigger;
 	dsp::SchmittTrigger jumpTriggers[n_steps];
 
 	int sequencer_index = 0;
@@ -102,13 +102,25 @@ struct Shaney : Module {
 				if (new_index < n_steps) {
 					sequencer_index = new_index;
 				}
+				// If the new_index _is_ the final position, we leave the sequencer_index as it is and stop running
+				else
+				{
+					running = false;
+				}
 			}
 		}
 
-				
+		// Check if the Start input has been triggered
+		// As this comes after the stopping probability check above it will take precedence
+		if (runTrigger.process(inputs[RUN_INPUT].getVoltage()))
+		{
+			running = true;
+		}
+
+		// Reset the step outputs and lights
 		for (int i = 0; i < n_steps; ++i)
 		{
-			outputs[GATE_OUTPUT + i];
+			outputs[GATE_OUTPUT + i].setVoltage(0);
 			lights[STEP_LIGHT + i].setBrightness(0);
 			// Check for jump triggers
 			// If multiple triggers are detected on a process() call then the highest one takes priority
@@ -119,10 +131,11 @@ struct Shaney : Module {
 			}
 		}
 
-		float out = clockTrigger.isHigh() * 10;
+		// Output
 		lights[STEP_LIGHT + sequencer_index].setBrightness(1);
 		if (running)
 		{
+			float out = clockTrigger.isHigh() * 10;
 			outputs[GATE_OUTPUT + sequencer_index].setVoltage(out);
 		}
 	}
@@ -142,6 +155,9 @@ struct ShaneyWidget : ModuleWidget {
 		float input_x_base = 160;
 		Vec clock_input_pos = Vec(input_x_base, 30);
 		addInput(createInputCentered<FF01JKPort>(mm2px(clock_input_pos), module, Shaney::CLOCK_INPUT));
+
+		Vec run_input_pos = Vec(input_x_base, 60);
+		addInput(createInputCentered<FF01JKPort>(mm2px(run_input_pos), module, Shaney::RUN_INPUT));
 
 		float knob_x_base = 2 * RACK_GRID_WIDTH;
 		float knob_y_base = 24;
