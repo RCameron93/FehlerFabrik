@@ -1,3 +1,10 @@
+// Markov Step Sequencer
+// Title Font -  STEREO SANS by Joonas Timmi (SUVA type foundry)
+// https://www.suvatypefoundry.ee/stereo-sans/
+// Main font - Jost
+// https://indestructibletype.com/Jost.html
+
+
 #include "plugin.hpp"
 
 #include "ffCommon.hpp"
@@ -158,20 +165,20 @@ struct ShaneyWidget : ModuleWidget {
 		addChild(createWidget<FFHexScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<FFHexScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		float input_x_base = 160;
-		Vec clock_input_pos = Vec(input_x_base, 30);
+		float knob_x_base = 21.926;
+		float knob_y_base = 31.110;
+		float x_delta = 15.507;
+		float y_delta = 10.5;
+
+		float input_x_base = 143.894;
+		Vec clock_input_pos = Vec(input_x_base, knob_y_base);
 		addInput(createInputCentered<FF01JKPort>(mm2px(clock_input_pos), module, Shaney::CLOCK_INPUT));
 
-		Vec run_input_pos = Vec(input_x_base, 60);
+		Vec run_input_pos = Vec(input_x_base, knob_y_base + 2 * y_delta);
 		addInput(createInputCentered<FF01JKPort>(mm2px(run_input_pos), module, Shaney::RUN_INPUT));
 
-		Vec run_light_pos = Vec(input_x_base, 70);
+		Vec run_light_pos = Vec(input_x_base, 60);
 		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(run_light_pos), module, Shaney::RUN_LIGHT));
-
-		float knob_x_base = 2 * RACK_GRID_WIDTH;
-		float knob_y_base = 24;
-		float x_delta = 13;
-		float y_delta = 11;
 
 		for (int i = 0; i < n_steps; ++i)
 		{
@@ -187,15 +194,16 @@ struct ShaneyWidget : ModuleWidget {
 				addParam(createParamCentered<FF08GKnob>(mm2px(knob_pos), module, Shaney::PROB_PARAM + element_index));
 			}
 
-			float in_y_pos = 14;
+			float in_y_pos = 15.776;
 			Vec in_pos = Vec(x_pos, in_y_pos);
 			addInput(createInputCentered<FF01JKPort>(mm2px(in_pos), module, Shaney::JUMP_INPUT + i));
 
-			float led_y_pos = 108;
+			// float led_y_pos = 108;
+			float led_y_pos = 22.7;
 			Vec led_pos = Vec(x_pos, led_y_pos);
 			addChild(createLightCentered<MediumLight<RedLight>>(mm2px(led_pos), module, Shaney::STEP_LIGHT + i));
 
-			float out_y_pos = 115;
+			float out_y_pos = 113.813;
 			Vec out_pos = Vec(x_pos, out_y_pos);
 			addOutput(createOutputCentered<FF01JKPort>(mm2px(out_pos), module, Shaney::GATE_OUTPUT + i));
 		}

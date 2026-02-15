@@ -134,7 +134,7 @@
     {
       "slug": "Shaney",
       "name": "Shaney",
-      "description": "markov step sequencer",
+      "description": "Markov Step Sequencer",
       "tags": [
         "sequencer",
         "random"
