@@ -28,6 +28,7 @@ struct Shaney : Module {
 	};
 	enum LightId {
 		ENUMS(STEP_LIGHT, n_steps),
+		RUN_LIGHT,
 		LIGHTS_LEN
 	};
 
@@ -135,8 +136,13 @@ struct Shaney : Module {
 		lights[STEP_LIGHT + sequencer_index].setBrightness(1);
 		if (running)
 		{
+			lights[RUN_LIGHT].setBrightness(1);
 			float out = clockTrigger.isHigh() * 10;
 			outputs[GATE_OUTPUT + sequencer_index].setVoltage(out);
+		}
+		else
+		{
+			lights[RUN_LIGHT].setBrightness(0);
 		}
 	}
 };
