@@ -60,7 +60,8 @@ struct Shaney : Module {
 	}
 
 	void process(const ProcessArgs& args) override {
-		if (inputs[CLOCK_INPUT].isConnected())
+		// Only bother to check the probabilities if the sequencer is running
+		if (running && inputs[CLOCK_INPUT].isConnected())
 		{
 			if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage()))
 			{
