@@ -32,7 +32,6 @@ struct Shaney : Module {
 	};
 
 	dsp::SchmittTrigger clockTrigger;
-	dsp::SchmittTrigger resetTrigger;
 
 	dsp::SchmittTrigger jumpTriggers[n_steps];
 
