@@ -44,6 +44,7 @@ struct Shaney : Module {
 
         configInput(CLOCK_INPUT, "External Clock Trigger");
 
+		// Init position of knobs is 100% chance of moving to the next step
 		for (int i = 0; i < n_elements; ++i)
 		{
 			float default_value = (i % n_steps == i / n_steps) ? 1.f : 0.f;
@@ -66,21 +67,38 @@ struct Shaney : Module {
 			if (clockTrigger.process(inputs[CLOCK_INPUT].getVoltage()))
 			{
 
-				// Add an extra step for the probabilty of the sequence stopping
+				// Create an array that will hold the probabilty of moving to each step
+				// With an extra step for the probabilty of the sequence stopping
+				// These are stored as cumulative probabilities, akin to a cumulative distribution function
+				// Note that these aren't **really** probabilities since the total of them all can sum to greater than 1
 				float cumulative_probabilities[n_steps + 1] = {0};
+				// This will be a running total of all the probabilities
 				float running_total = 0.0;
+
+				// Read the probability for each step into the array and add to the running total
 				for (int i = 0; i < n_steps; ++i)
 				{
 					float this_probability = params[PROB_PARAM + i + (n_steps * sequencer_index)].getValue();
 					running_total += this_probability;
 					cumulative_probabilities[i] = running_total;
 				}
+
+				// If the running total is less than 1, there's a chance that the sequencer will stop
+				// That chance is the difference between the current running total and 1
 				float chance_of_stopping = fmax(0, 1 - running_total);
 				running_total += chance_of_stopping;
 				cumulative_probabilities[n_steps] = running_total;
+
+				// Get a random value that determines which step to change to 
+				// This value is a fraction of the running total
+				// The step that will be jumped to is the one that is to the left of where the random_value would be inserted into the probabilities array
 				float random_value = random::uniform() * running_total;
+				
+				// Find where that insertion point would be, relative to the beginning of the array
 				auto bisected = std::upper_bound(std::begin(cumulative_probabilities), std::end(cumulative_probabilities), random_value);
+				// Pointers! C++!
 				int new_index = bisected - std::begin(cumulative_probabilities);
+				// Check that the new index is not the final one in the array, ie the one that represents sequencer stopping
 				if (new_index < n_steps) {
 					sequencer_index = new_index;
 				}
@@ -92,6 +110,9 @@ struct Shaney : Module {
 		{
 			outputs[GATE_OUTPUT + i];
 			lights[STEP_LIGHT + i].setBrightness(0);
+			// Check for jump triggers
+			// If multiple triggers are detected on a process() call then the highest one takes priority
+			// The highest step trigger takes priority
 			if (jumpTriggers[i].process(inputs[JUMP_INPUT + i].getVoltage()))
 			{
 				sequencer_index = i;
@@ -129,7 +150,10 @@ struct ShaneyWidget : ModuleWidget {
 
 		for (int i = 0; i < n_steps; ++i)
 		{
+			// X position for the knobs and ports for this step
 			float x_pos = knob_x_base + i * x_delta;
+
+			// Probability knobs for each step
 			for (int j = 0; j < n_steps; ++j)
 			{
 				float y_pos = knob_y_base + (j % n_steps) * y_delta;
