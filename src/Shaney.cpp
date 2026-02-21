@@ -55,7 +55,9 @@ struct Shaney : Module {
 		// Init position of knobs is 100% chance of moving to the next step
 		for (int i = 0; i < n_elements; ++i)
 		{
-			float default_value = (i % n_steps == i / n_steps) ? 1.f : 0.f;
+			int step_pointed_to_by_this_knob = i % n_steps;
+			int default_next_step = ((i / n_steps) + 1) % n_steps;
+			float default_value = (step_pointed_to_by_this_knob == default_next_step) ? 1.f : 0.f;
 			std::string knob_name = string::f("Probability %d", i);
 			configParam(PROB_PARAM + i, 0.f, 1.f, default_value, knob_name);
 		}
