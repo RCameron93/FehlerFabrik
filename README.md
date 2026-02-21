@@ -96,9 +96,22 @@ The opal wavetable used in PSI OP is taken from [ValleyRack](https://github.com/
 
 ![Image of Rasoir](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFRasoir.png)
 
-Rasoir is an asymmetrical voltage processor. It's based on the the types of distortion found in modules like [Autodafe's FoldBack](https://github.com/antoniograzioli/Autodafe/blob/master/src/FoldBack.cpp) and [HetrickCV's Waveshape](https://github.com/mhetrick/hetrickcv/blob/master/src/Waveshape.cpp). What makes Rasoir unique is it's ability to slice a waveform into two components that lie above or below a threshold voltage and process those components seperately. Both high and low components can be shifted in time, clipped, pinched, folded and slewed. The top row of controls and jacks affects the high component, and the lower row the low component. Each component has it's own output, and they're combined on the main output. The main output also has dry/wet control and a DC offset filter.
+Rasoir is an asymmetrical voltage processor. It's based on the types of distortion found in modules like [Autodafe's FoldBack](https://github.com/antoniograzioli/Autodafe/blob/master/src/FoldBack.cpp) and [HetrickCV's Waveshape](https://github.com/mhetrick/hetrickcv/blob/master/src/Waveshape.cpp). What makes Rasoir unique is it's ability to slice a waveform into two components that lie above or below a threshold voltage and process those components separately. Both high and low components can be shifted in time, clipped, pinched, folded and slewed. The top row of controls and jacks affects the high component, and the lower row the low component. Each component has it's own output, and they're combined on the main output. The main output also has dry/wet control and a DC offset filter.
 
 See [here](https://www.youtube.com/watch?v=nh-8XyOFzqo&feature=youtu.be) for a demo
+
+## Shaney
+
+![Image of Shaney](https://github.com/RCameron93/FehlerFabrik/blob/master/docs/images/FFShaney.png)
+
+Shaney is an eight step stochastic gate sequencer inspired by [Markov Chains](https://en.wikipedia.org/wiki/Markov_chain). 
+The sequencer will determine which step it will move to next based on the setting of the eight probability knobs of the current step.
+When a clock trigger is received at the Clock input the sequencer will move to the step.
+The higher the knob the more likely the chance that that step will be the one that comes next.
+If the combined probability of all knobs on the current step is less than one, then there will be a chance that the sequencer will stop.
+If the sequencer does stop then it can be restarted again by sending a trigger to the Run input. 
+The sequencer can jump to any step regardless of the probability states by sending a trigger to the relevant Jump input.
+
 
 ## Sigma
 
