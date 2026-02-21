@@ -21,7 +21,6 @@ void init(Plugin *p)
 	p->addModel(modelNova);
 	p->addModel(modelLilt);
 	p->addModel(modelBotzinger);
-	// p->addModel(modelSpread);
 	p->addModel(modelShaney);
 
 	// Any other plugin initialization may go here.

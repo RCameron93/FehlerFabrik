@@ -24,5 +24,4 @@ extern Model *modelChi;
 extern Model *modelNova;
 extern Model *modelLilt;
 extern Model* modelBotzinger;
-// extern Model* modelSpread;
 extern Model* modelShaney;
